@@ -55,17 +55,27 @@ exam = {
   ]}
 
 def opt(text, why): return {'text': text, 'why': why}
-def concept(cid, domain, obj, order, title, sources, recall, scenario=None, diagrams=None, setting=None, rev=None):
+def concept(cid, domain, obj, order, title, sources, recall, scenario=None, diagrams=None, setting=None, rev=None, verified=None, guide=None):
   c = {'setting': setting or SETTING[cid], 'domain': domain, 'objective': obj, 'order': order, 'title': title, 'exam': 'databricks-dea',
        'status': 'live', 'rev': REV.get(cid, rev or 2), 'guide': GUIDE, 'lastVerified': VERIFIED, 'sources': sources,
        'recall': {'variants': recall}, 'scenario': {'variants': scenario} if scenario else None}
   if diagrams: c['diagrams'] = diagrams
+  if verified: c['lastVerified'] = verified
+  if guide: c['guide'] = guide
+  c.update(CHANGED.get(cid, {}))
   return cid, c
 
 D = 'https://docs.databricks.com'
 # Card rule: every prompt names its setting (product or feature area) unless the setting is the answer.
 REV = {k: 3 for k in ['dea-2-2-copy-into-idempotent', 'dea-2-3-autoloader-schema-evolution', 'dea-3-6-streaming-table-vs-mv',
   'dea-3-7-expectations', 'dea-7-2-usage-privileges', 'dea-7-3-masks-and-filters']}
+# Concepts revised after their first release: their own rev and lastVerified, leaving GUIDE and VERIFIED alone.
+W1109 = '2026-11-09'
+CHANGED = {
+  'dea-2-1-pipeline-modes': {'rev': 2, 'lastVerified': W1109}, 'dea-2-6-choose-ingestion': {'rev': 2, 'lastVerified': W1109},
+  'dea-4-2-run-if': {'rev': 2, 'lastVerified': W1109}, 'dea-4-4-job-triggers': {'rev': 3, 'lastVerified': W1109},
+  'dea-3-6-mv-refresh': {'rev': 2, 'lastVerified': W1109}, 'dea-2-5-jdbc-in-notebooks': {'rev': 2, 'lastVerified': W1109},
+}
 SETTING = {
   'dea-1-2-compute-choice': ['compute', 'Lakeflow Jobs'], 'dea-2-2-copy-into-idempotent': ['COPY INTO'],
   'dea-2-3-autoloader-schema-evolution': ['Auto Loader'], 'dea-3-6-streaming-table-vs-mv': ['Lakeflow Declarative Pipeline'],
@@ -217,7 +227,7 @@ C.append(concept('dea-4-4-job-triggers', '4', '4.4', 6, 'Time-based or data-driv
   [
     {'id': 'r1', 'type': 'decision', 'prompt': 'A job in Lakeflow Jobs should run whenever another team’s pipeline updates `main.silver.orders`. Which trigger type?', 'answer': 'Table update', 'why': 'It watches Unity Catalog tables and starts a run after they change, with no cluster waiting.', 'src': 1},
     {'id': 'r2', 'type': 'decision', 'prompt': 'A job in Lakeflow Jobs should run when new files land in a Unity Catalog volume. Which trigger type?', 'answer': 'File arrival', 'why': 'It monitors a Unity Catalog storage location and starts a run when new files appear.'},
-    {'id': 'r3', 'type': 'basic', 'prompt': 'A job in Lakeflow Jobs reads two upstream tables. How should its table update trigger be set so it waits until both have changed?', 'answer': 'Run when all monitored tables are updated', 'why': 'A table update trigger can fire on any one table or only once all monitored tables are updated.', 'src': 1},
+    {'id': 'r3', 'type': 'basic', 'prompt': 'A job in Lakeflow Jobs reads two upstream tables. How should its table update trigger be set so it waits until both have changed?', 'answer': 'Add both tables to the trigger and set Trigger when to All tables are updated', 'why': 'With more than one table monitored, Trigger when chooses between a run when any table is updated and a run only once all of them are.', 'src': 1},
     {'id': 'r4', 'type': 'comparison', 'prompt': 'In Lakeflow Jobs, scheduled or table update trigger: which one can start runs that find no new data?', 'answer': 'Scheduled', 'why': 'A schedule fires on time whether or not data changed; a table update trigger fires only after a change.'},
   ],
   [
@@ -350,56 +360,17 @@ C.append(concept('dea-7-3-masks-and-filters', '7', '7.3', 10, 'Column masks and 
 
 # ---------- milestone 3 batch ----------
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import batch_m3
-for chunk in batch_m3.CHUNKS: C.extend(chunk(concept, opt))
-
-# ---------- card-rule checks ----------
-problems, notes = [], []
-if len({cid for cid, _ in C}) != len(C): problems.append('duplicate concept ids')
-if len({c['order'] for _, c in C}) != len(C): problems.append('duplicate order values')
-def prose_fields(v):
-  for k in ('prompt', 'text', 'stem', 'answer', 'why'):
-    if k in v: yield k, v[k]
+import batch_m3, batch_w20261109
+for chunk in batch_m3.CHUNKS + batch_w20261109.CHUNKS: C.extend(chunk(concept, opt))
+# Each concept carries its fact-check evidence ([source index, regex] pairs), so the database copy is self-contained.
 for cid, c in C:
-  r = c['recall']['variants']; s = (c['scenario'] or {}).get('variants', [])
-  if len(r) < 3: problems.append(f'{cid}: recall track has {len(r)} variants')
-  if c['scenario'] and len(s) < 3: problems.append(f'{cid}: scenario track has {len(s)} variants')
-  if len({v['id'] for v in r}) != len(r) or len({v['id'] for v in s}) != len(s): problems.append(f'{cid}: duplicate variant ids')
-  for v in r:
-    if v['type'] in ('cloze', 'code'):
-      field = v['text'] if v['type'] == 'cloze' else v['code']
-      if field.count('{{gap}}') != 1: problems.append(f'{cid}/{v["id"]}: needs exactly one gap')
-    if v['type'] == 'occlusion' and v['mask'] not in c['diagrams'][v['diagram']]['labels']: problems.append(f'{cid}/{v["id"]}: bad mask')
-    if v.get('src', 0) >= len(c['sources']): problems.append(f'{cid}/{v["id"]}: bad source index')
-  for v in s:
-    k = v['pick']
-    if len(v['correct']) != k: problems.append(f'{cid}/{v["id"]}: pick {k} but {len(v["correct"])} correct')
-    if not 4 <= len(v['distractors']) <= 6: problems.append(f'{cid}/{v["id"]}: distractor pool {len(v["distractors"])}')
-    allo = v['correct'] + v['distractors']
-    if any(not o.get('why') for o in allo): problems.append(f'{cid}/{v["id"]}: option without explanation')
-    if any(re.search(r'all of the above|none of the above', o['text'], re.I) for o in allo): problems.append(f'{cid}/{v["id"]}: “of the above” option')
-    L = [len(re.sub(r'`', '', o['text'])) for o in allo]
-    ratio = max(L) / min(L)
-    if ratio > 2.2: notes.append(f'{cid}/{v["id"]}: option length ratio {ratio:.1f}')
-    if v.get('flip'):
-      mate = next((x for x in s if x['id'] == v['flip']), None)
-      if not mate or mate.get('flip') != v['id']: problems.append(f'{cid}/{v["id"]}: flip partner {v["flip"]} missing or not paired back')
-      elif {o['text'] for o in v['correct']} == {o['text'] for o in mate['correct']}: problems.append(f'{cid}/{v["id"]}: flip pair has the same answer')
-    texts = [o['text'] for o in allo]
-    if len(set(texts)) != len(texts): problems.append(f'{cid}/{v["id"]}: duplicate option text')
-  for v in r + s:
-    for k, t in prose_fields(v):
-      bare = re.sub(r'`[^`]*`', '', t)
-      if "'" in bare or '"' in bare: problems.append(f'{cid}/{v["id"]}.{k}: straight quote in prose: {bare[:60]}')
-  for v in r + s:
-    q = v.get('prompt') or v.get('text') or v.get('stem') or ''
-    if not v.get('settingIsAnswer') and not any(t.lower() in q.lower() for t in c['setting']):
-      problems.append(f'{cid}/{v["id"]}: prompt doesn’t name its setting ({" / ".join(c["setting"])})')
-  for v in r:
-    for ln in (v.get('code') or '').split('\n'):
-      if len(ln.replace('{{gap}}', 'x' * 9)) > 40:
-        problems.append(f'{cid}/{v["id"]}: code line over 40 characters, too wide for a phone: {ln[:45]}')
-  if len(json.dumps(c)) > 200_000: problems.append(f'{cid}: document too large')
+  ev = {**batch_m3.EVIDENCE, **batch_w20261109.EVIDENCE}.get(cid)
+  if ev: c['evidence'] = [[i, rx] for i, rx in ev]
+
+# ---------- card-rule checks (tools/validate.py) ----------
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools'))
+import validate
+problems, notes = validate.check(C)
 
 n_tracks = sum(1 + (1 if c['scenario'] else 0) for _, c in C)
 n_var = sum(len(c['recall']['variants']) + len((c['scenario'] or {}).get('variants', [])) for _, c in C)

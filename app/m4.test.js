@@ -217,7 +217,7 @@ async function confirmRestore(d, waitMs = 300) { await click(d, '#restoreGo'); a
     const want = clone(priv(store));
     const got = clone(b.private);
     assert.deepEqual(got, want, 'every private row exported');
-    assert.equal(b.counts.reviews, 1203); assert.equal(b.counts.concepts, 50);
+    assert.equal(b.counts.reviews, 1203); assert.equal(b.counts.concepts, Object.keys(b.content).filter(k => k.startsWith('concepts/')).length);
     const pages = store.queries.filter(q => q.path.endsWith('/reviews') && q.limit === 500);
     assert(pages.length >= 3, 'reviews read in pages: ' + pages.length);
     assert(/Backup saved/.test(text(d, '#backupMsg')) && /Last backup/.test(text(d, '#lastBackup')));

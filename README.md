@@ -121,7 +121,7 @@ Every release publishes the full `app/build/cert-srs.html`; small changes go thr
 | `reports/{uid}/items/{ms}_{rand}` | `t`, `kind` (`flag`, `missed` or `feedback`), `status: "open"`, `from`, `exam`, `app`. Flags add `track`, `concept`, `cardKind`, `variant`, `reason`, `note`, `contentRev`; missed adds the missed-question fields; feedback adds `text`. Closed with `status: "resolved"` and `resolvedOn`, from the inbox or from chat | App (colleagues), then owner |
 | `data/users/{me}/state/notes/{ms}_score` | `t`, `kind: "score"`, `status`, `date`, `percent`, `questions`, `test`, `domains` (`{"2": "60%"}`), `note` | App, then chat |
 
-Content goes in from chat as a `write_db` batch that reads each document from `content/out/` (`file_path`). Every write to an existing document is pinned with `if_version` to the version in `db_versions.json`; new documents have no version to pin. Each chunk is read back and compared with `content/out/`. Wording changes keep review history. A substantive answer change resets that track, as the spec says.
+Content is managed from claude.ai since 2026-11-09, with the database as its master copy (see CLAUDE.md, Content release). It goes in from chat as a `write_db` batch that reads each document from a workspace file (`file_path`). Every write to an existing document is pinned with `if_version` to the version that run read; new documents have no version to pin. Each chunk is read back and compared with `content/out/`. Wording changes keep review history. A substantive answer change resets that track, as the spec says.
 
 ## Card rules the validator enforces
 

@@ -1,9 +1,9 @@
 // Plays every variant of the given concepts through the real app (test.html) in jsdom, with an in-memory database.
-// Usage: node play_chunk.js <first order> <last order>   (concept "order" range, inclusive)
+// Usage: [CERT_SRS_ALL=<all.json>] node play_chunk.js <first order> <last order>   (concept "order" range, inclusive)
 const { JSDOM } = require('jsdom'), fs = require('fs'), path = require('path'), assert = require('assert');
 const { makeStore } = require('./fakeclaude.js');
 const html = fs.readFileSync(path.join(__dirname, 'test.html'), 'utf8');
-const content = JSON.parse(fs.readFileSync(path.join(__dirname, '../content/all.json'), 'utf8'));
+const content = JSON.parse(fs.readFileSync(process.env.CERT_SRS_ALL || path.join(__dirname, '../content/all.json'), 'utf8'));  // CERT_SRS_ALL: a weekly-review workspace's all.json
 const exam = content['exams/databricks-dea'];
 const [lo, hi] = process.argv.slice(2).map(Number);
 const sleep = ms => new Promise(r => setTimeout(r, ms));

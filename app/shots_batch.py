@@ -1,11 +1,12 @@
 # Phone-width (390x844) screenshots of chosen cards, as a phone shows them, plus a horizontal-overflow check.
 # Usage: python3 shots_batch.py test.html <prefix> '<json list of [concept, kind, variant, phase]>'   phase: ask | open
-import json, os, sys, time, asyncio
+import json, os, re, sys, time, asyncio
 from playwright.async_api import async_playwright
 from PIL import Image
 html, prefix, cards = sys.argv[1], sys.argv[2], json.loads(sys.argv[3])
-store_js = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fakeclaude.js')).read().replace('module.exports = { makeStore };', '')
-content = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../content/all.json')))
+store_js = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fakeclaude.js')).read()
+store_js = re.sub(r'^module\.exports = .*$', '', store_js, flags=re.M)  # browser has no module
+content = json.load(open(os.environ.get('CERT_SRS_ALL') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '../content/all.json')))  # CERT_SRS_ALL: a workspace's all.json
 now = int(time.time() * 1000); DAY = 86400000
 def st(track, kind, seen, last, due):
     return {'track': track, 'concept': track.split(':')[0], 'kind': kind, 'introduced': now - 5 * DAY, 'seen': seen, 'lastVariant': last,
@@ -26,7 +27,7 @@ async def main():
         b = await p.chromium.launch()
         for i, (cid, kind, vid, phase) in enumerate(cards):
             pg = await b.new_page(viewport={'width': 390, 'height': 844}, device_scale_factor=2)
-            await pg.add_init_script(store_js + "\nconst __s = makeStore(" + json.dumps(seed(cid, kind, vid)) + ");\nwindow.claude = { use: async n => n==='db' ? __s.db : n==='user' ? { id: async () => 'u1' } : null };")
+            await pg.add_init_script(store_js + "\nconst __s = makeStore(" + json.dumps(seed(cid, kind, vid)) + ");\nwindow.claude = { use: async n => n==='db' ? __s.db : n==='user' ? { id: async () => 'u1', isOwner: async () => true } : null };")
             await pg.goto('file://' + os.path.abspath(html)); await pg.wait_for_selector('#reveal, .opts')
             if phase == 'open':
                 if kind == 'recall': await pg.click('#reveal')

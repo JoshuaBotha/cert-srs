@@ -28,7 +28,7 @@ Republishing the page leaves the database untouched, so review history survives 
 | `app/*.test.js`, `app/fakeclaude.js` | jsdom tests against an in-memory stand-in for the artifact database that enforces the same access rules. |
 | `app/published-cert-srs.html` | Byte-for-byte copy of what is live. The baseline for every release. |
 | `content/build_content.py` | Blueprint, the 10 sample concepts, the card-rule validator, the `REV` map of content revisions. Imports `batch_m3.py` (40 concepts in `CHUNKS`). Writes `content/out/` and `content/all.json`. |
-| `content/db_versions.json` | Database version of every content document, used to pin writes with `if_version`. |
+| `content/db_versions.json` | Database versions as of 2026-11-09; no longer maintained (see Content release). |
 | `tools/snapshot.py`, `tools/restore_content.py` | Turn a `read_db` dump into a backup file; split a backup into `write_db` batches. |
 | `tools/live_compare.py` | Compares a saved `Artifact` read of the live page with a local file, ignoring the document skeleton publishing adds. |
 | `.mise.toml` | Toolchain pins (node, python, uv) and the `.venv` virtualenv mise creates and activates. |
@@ -86,12 +86,15 @@ To try a change without touching the live page, publish the build without `url`.
 
 ## Content release
 
-1. **Edit content** in `content/build_content.py` or a batch module such as `batch_m3.py`. Bump the concept's revision in `REV` when its cards change. A substantive answer change resets that track (see the spec).
-2. **Build.** `mise run content:build`. Done when the validator passes and `content/out/` is written.
-3. **Test.** `mise run app:test`. Done when every test passes.
-4. **Write.** `ArtifactData` batch of `set` operations on the live URL, one per changed document, each reading its body from `content/out/` with `file_path` and pinned with `if_version` from `db_versions.json`. New documents have no version to pin. Keep batches to 50 operations. A version conflict means the database changed outside the repo: stop and tell Josh.
-5. **Verify.** Read back each written document. Done when every one matches its `content/out/` file.
-6. **Record.** Update `db_versions.json` (`asOf` and each new version), then commit.
+From 2026-11-09 the artifact database is the master copy of content, and content is managed from claude.ai: the Cert SRS Project's `weekly-review` doc is the procedure. This repo keeps the tooling and is read-only to those sessions; nothing there needs a push. `content/build_content.py` and the batch modules are the archive of how content was written up to 2026-11-09, and `content/db_versions.json` is no longer maintained (each run pins writes to the versions it reads).
+
+The tools a claude.ai session uses on a `read_db` dump:
+
+1. `tools/workspace.py init <dump> <ws>`: copies `exams/` and `concepts/` into an editable workspace plus an untouched `base/`, and writes `<ws>/all.json`. After edits, `workspace.py build <ws>`.
+2. `tools/validate.py <ws>`: the card-rule validator, shared with `build_content.py`.
+3. `content/factcheck.py --all <ws>/all.json [ids]`: tests each concept's own `evidence` field ([source index, regex] pairs) against its sources.
+4. `CERT_SRS_ALL=<ws>/all.json node app/play_chunk.js <lo> <hi>` and `app/shots_batch.py` with the same variable.
+5. `tools/workspace.py diff <ws> <versions.json>`: lists changed and new documents and writes pinned `write_db` batches.
 
 ## Database boundaries
 

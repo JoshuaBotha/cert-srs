@@ -17,7 +17,7 @@ def chunk1(concept, opt):
       {'id': 'r1', 'type': 'decision', 'prompt': 'A Lakeflow Declarative Pipeline ingests orders that analysts read once each morning, and cost matters more than latency. Triggered or continuous mode?', 'answer': 'Triggered', 'why': 'It processes the data available when the update starts, then stops, so compute runs only for the update.'},
       {'id': 'r2', 'type': 'basic', 'prompt': 'A triggered Lakeflow Declarative Pipeline update starts at 06:00. Which data does it process?', 'answer': 'The data available when the update started', 'why': 'It refreshes every table from that data and stops; anything arriving later waits for the next update.'},
       {'id': 'r3', 'type': 'comparison', 'prompt': 'In a Lakeflow Declarative Pipeline, triggered or continuous mode: which needs an always-running cluster?', 'answer': 'Continuous', 'why': 'It processes data as it arrives and runs until stopped; triggered mode stops when the update completes.'},
-      {'id': 'r4', 'type': 'basic', 'prompt': 'A Lakeflow Declarative Pipeline set to triggered mode runs as a task in a continuous job. How does it run?', 'answer': 'Continuously', 'why': 'When a job orchestrates a pipeline, the job’s execution mode takes precedence over the pipeline’s own mode setting.'},
+      {'id': 'r4', 'type': 'decision', 'prompt': 'A Lakeflow Declarative Pipeline’s own mode setting says triggered, but the Lakeflow Jobs job that runs it says continuous. Which way does the pipeline run: triggered or continuously?', 'answer': 'Continuously', 'why': 'When a job orchestrates a pipeline, the job’s execution mode takes precedence over the pipeline’s own mode setting.'},
       {'id': 'r5', 'type': 'cloze', 'text': 'For a continuous Lakeflow Declarative Pipeline, Databricks recommends a continuous {{gap}} rather than setting the pipeline mode to continuous.', 'answer': 'job', 'why': 'The job manages the pipeline’s lifecycle; leave the pipeline’s own mode at triggered, the default.'},
     ],
     [
@@ -146,11 +146,11 @@ def chunk1(concept, opt):
      {'title': 'Managed SaaS connectors', 'url': D + '/ingestion/lakeflow-connect/saas-overview'},
      {'title': 'Connect to external databases and catalogs', 'url': D + '/query-federation/'}],
     [
-      {'id': 'r1', 'type': 'basic', 'prompt': 'When choosing how to ingest a source into Databricks, which layer does Databricks recommend trying first?', 'answer': 'The most managed one: a managed connector', 'why': 'Drop to Lakeflow pipelines or Structured Streaming only when the managed layer can’t meet the need, such as an unsupported source.'},
+      {'id': 'r1', 'type': 'basic', 'prompt': 'When choosing how to ingest a source into Databricks, which layer does Databricks recommend trying first?', 'answer': 'A Lakeflow Connect managed connector', 'why': 'Databricks recommends starting with the most managed layer, and dropping to Lakeflow pipelines or Structured Streaming only when it can’t meet the need, such as an unsupported source.'},
       {'id': 'r2', 'type': 'decision', 'prompt': 'A SQL analyst wants to ingest new JSON files from cloud storage incrementally, in SQL only. What does Databricks recommend over COPY INTO?', 'answer': '`CREATE STREAMING TABLE` with `read_files`', 'why': 'Databricks calls the streaming table the scalable, recommended alternative to COPY INTO for SQL users.', 'src': 1},
       {'id': 'r3', 'type': 'decision', 'prompt': 'Analysts want to query a PostgreSQL table from Databricks now and then, without ingesting a copy. Which feature fits?', 'answer': 'Lakehouse Federation', 'why': 'Governed, read-only queries through a foreign catalog, pushed down to the source, with nothing copied.', 'src': 5},
       {'id': 'r4', 'type': 'decision', 'prompt': 'A database has no change data capture, but every table has an `updated_at` column. Which Lakeflow Connect option can ingest it incrementally?', 'answer': 'A query-based connector', 'why': 'It reads rows past the last high-water mark of a cursor column, with no gateway or staging volume.', 'src': 2},
-      {'id': 'r5', 'type': 'comparison', 'prompt': 'To ingest files with Lakeflow Connect, standard or managed file connectors: which use Spark and SQL APIs such as Auto Loader and `COPY INTO`?', 'answer': 'Standard file connectors', 'why': 'Managed file connectors, for sources such as SharePoint and Google Drive, handle authentication, incremental reads and retries for you.', 'src': 3},
+      {'id': 'r5', 'type': 'comparison', 'prompt': 'To ingest files, Lakeflow Connect has two kinds of file connector, standard and managed. Which kind is built on Spark and SQL APIs such as Auto Loader and `COPY INTO`?', 'answer': 'Standard file connectors', 'why': 'Managed file connectors, for sources such as SharePoint and Google Drive, handle authentication, incremental reads and retries for you.', 'src': 3},
     ],
     [
       {'id': 's1', 'flip': 's2', 'stem': 'A retailer must ingest its Salesforce opportunities into Unity Catalog every hour for reporting. Databricks supports Salesforce, and the team has no capacity to maintain API code.\n\nWhich option should they use?', 'pick': 1,
@@ -208,7 +208,7 @@ def chunk1(concept, opt):
     [
       {'id': 'r1', 'type': 'code', 'prompt': 'In a notebook, read a table through the JDBC Unity Catalog connection `erp_conn`.', 'lang': 'python', 'code': 'df = (spark.read\n  .format("jdbc")\n  .option("{{gap}}",\n    "erp_conn")\n  .option("dbtable", "dbo.invoices")\n  .load())', 'answer': 'databricks.connection', 'why': 'The connection holds the driver, URL and credentials, which stay hidden from the person querying.'},
       {'id': 'r2', 'type': 'basic', 'prompt': 'A notebook reads SQL Server through a Spark data source with the `query` option. Where does that SQL run?', 'answer': 'Entirely on the source database', 'why': 'Spark fetches only the result and doesn’t push its own transformations into that query.'},
-      {'id': 'r3', 'type': 'decision', 'prompt': 'A notebook on serverless compute must read a database over JDBC with a driver that isn’t bundled in the runtime. Which option works?', 'answer': 'A JDBC Unity Catalog connection', 'why': 'Custom driver JARs can’t be installed on serverless; the connection loads the driver from a Unity Catalog volume.'},
+      {'id': 'r3', 'type': 'decision', 'prompt': 'A notebook on serverless compute must read a database over JDBC with a driver that isn’t bundled in the runtime. Which option works?', 'answer': 'A JDBC Unity Catalog connection', 'why': 'Custom driver JARs can’t be installed on serverless; the connection loads the driver from a Unity Catalog volume or from Maven coordinates.'},
       {'id': 'r4', 'type': 'comparison', 'prompt': 'For reading an external database, a JDBC Unity Catalog connection or Lakehouse Federation: which governs access per table?', 'answer': 'Lakehouse Federation', 'why': 'A foreign catalog gives table-level access control; a JDBC connection governs only at the connection level.', 'src': 1},
       {'id': 'r5', 'type': 'basic', 'prompt': 'In a Spark data source read from a notebook, where should the database password come from?', 'answer': 'A secret, read with `dbutils.secrets.get`', 'why': 'The docs’ examples read the user and password from a secret scope instead of putting them in code.'},
     ],
@@ -237,7 +237,7 @@ def chunk1(concept, opt):
     (0, r'Custom third-party Spark JARs are not supported on Databricks SQL, serverless'), (0, r'MongoDB, Cassandra'),
     (0, r'dbutils\.secrets\.get'), (0, r'\| PostgreSQL \| `"postgresql"` \|'), (0, r'Writes on serverless compute are supported for PostgreSQL'),
     (1, r'JDBC Unity Catalog connection provides governance only at the connection level'), (1, r'query federation doesn\'t support writes'),
-    (1, r'reads and installs the JDBC driver JAR from a Unity Catalog volume'), (2, r'\[PostgreSQL\]')]
+    (1, r'installs the JDBC driver from JAR files in a Unity Catalog volume or from Maven coordinates'), (2, r'\[PostgreSQL\]')]
 
   # ---------- 2.7 VARIANT, STRUCT or JSON string ----------
   VA = {'var': '`VARIANT`, built with `parse_json`', 'str': 'A JSON `STRING` column', 'struct': 'A `STRUCT` parsed with `from_json`',
@@ -349,7 +349,7 @@ def chunk1(concept, opt):
   EVIDENCE['dea-1-1-delta-history'] = [(0, r'Run the `DESCRIBE HISTORY` command to retrieve information including the operations, user, and timestamp'),
     (0, r'reverse chronological order'), (0, r'VERSION AS OF 123'), (0, r'TIMESTAMP AS OF'), (0, r'people10m@v123'),
     (0, r'`logRetentionDuration`, which is 30 days by default'), (0, r'`deletedFileRetentionDuration` table property \(default 7 days\)'),
-    (0, r'For Unity Catalog managed tables, this applies to Databricks Runtime 12\.2 and above'), (0, r'Data files are deleted when `VACUUM` runs')]
+    (0, r'For Unity Catalog managed tables, this applies to Databricks Runtime 12\.2 LTS and above'), (0, r'Data files are deleted when `VACUUM` runs')]
   return C
 
 def chunk2(concept, opt):
@@ -461,15 +461,15 @@ def chunk2(concept, opt):
     (0, r'48 KB if you use task value references'), (0, r'JSON formatted arrays, task values, or job parameters')]
 
   # ---------- 4.2 Run if dependencies ----------
-  RI = {k: 'Run if: ' + k for k in ['All succeeded', 'At least one succeeded', 'None failed', 'All done', 'At least one failed', 'All failed']}
+  RI = {k: '`Run if`: `' + k + '`' for k in ['All succeeded', 'At least one succeeded', 'None failed', 'All done', 'At least one failed', 'All failed']}
   C.append(concept('dea-4-2-run-if', '4', '4.2', 24, 'Run if task dependencies',
     [{'title': 'Configure task dependencies', 'url': J + '/run-if'}],
     [
-      {'id': 'r1', 'type': 'basic', 'prompt': 'What is the default Run if condition for a Lakeflow Jobs task with dependencies?', 'answer': 'All succeeded', 'why': 'If any dependency fails, the task is marked Upstream failed and doesn’t run.'},
-      {'id': 'r2', 'type': 'decision', 'prompt': 'A Lakeflow Jobs cleanup task must run after its upstream tasks finish, whether they succeeded or failed. Which Run if condition?', 'answer': 'All done', 'why': 'It runs once every dependency has run, regardless of outcome.'},
-      {'id': 'r3', 'type': 'basic', 'prompt': 'A Lakeflow Jobs alert task uses Run if At least one failed, and every upstream task succeeds. What happens to the alert task?', 'answer': 'It’s marked Excluded and skipped', 'why': 'Failure-handling conditions that aren’t met mark the task Excluded rather than failed.'},
-      {'id': 'r4', 'type': 'basic', 'prompt': 'In Lakeflow Jobs, a task’s Run if is All succeeded and one upstream task fails. How is the task marked?', 'answer': 'Upstream failed', 'why': 'All succeeded, At least one succeeded and None failed mark the task Upstream failed when unmet.'},
-      {'id': 'r5', 'type': 'basic', 'prompt': 'When Lakeflow Jobs evaluates Run if conditions, how does it treat an upstream task marked Excluded?', 'answer': 'As successful', 'why': 'Upstream failed and Upstream canceled count as failed, not skipped.'},
+      {'id': 'r1', 'type': 'basic', 'prompt': 'What is the default `Run if` condition for a Lakeflow Jobs task with dependencies?', 'answer': '`All succeeded`', 'why': 'If any dependency fails, the task is marked `Upstream failed` and doesn’t run.'},
+      {'id': 'r2', 'type': 'decision', 'prompt': 'A Lakeflow Jobs cleanup task must run after its upstream tasks finish, whether they succeeded or failed. Which `Run if` condition?', 'answer': '`All done`', 'why': 'It runs once every dependency has run, regardless of outcome.'},
+      {'id': 'r3', 'type': 'basic', 'prompt': 'A Lakeflow Jobs alert task uses `Run if` `At least one failed`, and every upstream task succeeds. What happens to the alert task?', 'answer': 'It’s marked `Excluded` and skipped', 'why': 'Failure-handling conditions that aren’t met mark the task `Excluded` rather than failed.'},
+      {'id': 'r4', 'type': 'basic', 'prompt': 'In Lakeflow Jobs, a task’s `Run if` condition is `All succeeded`, and one of its upstream tasks fails. What status does the task get?', 'answer': '`Upstream failed`', 'why': '`All succeeded`, `At least one succeeded` and `None failed` mark the task `Upstream failed` when unmet.'},
+      {'id': 'r5', 'type': 'basic', 'prompt': 'When Lakeflow Jobs evaluates `Run if` conditions, how does it treat an upstream task marked `Excluded`?', 'answer': 'As successful', 'why': '`Upstream failed` and `Upstream canceled` count as failed, not skipped.'},
     ],
     [
       {'id': 's1', 'flip': 's2', 'stem': 'A Lakeflow Jobs job loads three regions in parallel. A notification task must run only if any of the three loads fails, and be skipped otherwise.\n\nWhich setting should the notification task use?', 'pick': 1,
@@ -485,7 +485,7 @@ def chunk2(concept, opt):
                        opt(RI['None failed'], 'Skips cleanup whenever a load fails.'),
                        opt(RI['At least one succeeded'], 'Skips cleanup when all three loads fail.')]},
       {'id': 's3', 'stem': 'A Lakeflow Jobs job pulls prices from two redundant vendor feeds in parallel. The pricing task can run as long as either feed succeeded.\n\nWhich setting should the pricing task use?', 'pick': 1,
-       'correct': [opt(RI['At least one succeeded'], 'Runs when either feed succeeded, and is marked Upstream failed only if both fail.')],
+       'correct': [opt(RI['At least one succeeded'], 'Runs when either feed succeeded, and is marked `Upstream failed` only if both fail.')],
        'distractors': [opt(RI['All succeeded'], 'Needs both feeds, defeating the redundancy.'),
                        opt(RI['None failed'], 'Won’t run if either feed failed.'),
                        opt(RI['All done'], 'Runs even when both feeds failed and there are no prices.'),
@@ -1036,7 +1036,7 @@ def chunk4(concept, opt):
     [{'title': 'Use standalone materialized views', 'url': D + '/sql/mv-st/materialized'}],
     [
       {'id': 'r1', 'type': 'code', 'prompt': 'In Databricks SQL, refresh a materialized view automatically whenever its source table changes.', 'lang': 'sql', 'code': 'CREATE OR REPLACE MATERIALIZED VIEW\n  sales.gold.daily_rev\n{{gap}} ON UPDATE\nAS SELECT order_date,\n  sum(amount) AS revenue\nFROM sales.silver.orders\nGROUP BY order_date;', 'answer': 'TRIGGER', 'why': 'Suited to production when upstream loads don’t run on a predictable schedule.'},
-      {'id': 'r2', 'type': 'comparison', 'prompt': 'In Databricks SQL, standard view or materialized view: which computes its results on demand at query time?', 'answer': 'The standard view', 'why': 'A materialized view stores the results and updates them as the sources change.'},
+      {'id': 'r2', 'type': 'comparison', 'prompt': 'In Databricks SQL, one kind of view stores precomputed results and the other runs its query every time it’s read. Which kind runs the query at read time: a standard view or a materialized view?', 'answer': 'The standard view', 'why': 'A materialized view stores the results and updates them as the sources change.'},
       {'id': 'r3', 'type': 'basic', 'prompt': 'What does Databricks create to process a materialized view’s refreshes when the view is defined in a SQL warehouse?', 'answer': 'A serverless pipeline', 'why': 'Refresh status shows in Catalog Explorer.'},
       {'id': 'r4', 'type': 'basic', 'prompt': 'How do you refresh a standalone materialized view by hand in Databricks SQL?', 'answer': '`REFRESH MATERIALIZED VIEW <name>`', 'why': 'It refreshes without recreating the view or changing its schedule.'},
       {'id': 'r5', 'type': 'basic', 'prompt': 'Who owns a standalone materialized view in Databricks SQL?', 'answer': 'The user who created it', 'why': 'The creator becomes the materialized view’s owner.'},
