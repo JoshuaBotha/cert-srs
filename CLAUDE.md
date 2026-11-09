@@ -31,11 +31,10 @@ Republishing the page leaves the database untouched, so review history survives 
 | `content/db_versions.json` | Database version of every content document, used to pin writes with `if_version`. |
 | `tools/snapshot.py`, `tools/restore_content.py` | Turn a `read_db` dump into a backup file; split a backup into `write_db` batches. |
 | `tools/live_compare.py` | Compares a saved `Artifact` read of the live page with a local file, ignoring the document skeleton publishing adds. |
-| `tools/bundle.py` | Writes `cert-srs-build.txt`, a one-file export for the claude.ai Project. Generated and git-ignored. |
 | `.mise.toml` | Toolchain pins (node, python, uv) and the `.venv` virtualenv mise creates and activates. |
 | `.mise/tasks/` | mise file tasks, one executable script per task. A subfolder is a task group: `.mise/tasks/app/test` runs as `mise run app:test`, and a group's `_default` script runs as the bare group name. |
 
-Generated and ignored: `app/build/`, `app/test.html`, `content/out/`, `content/all.json`, `cert-srs-build.txt`, `.venv/`.
+Generated and ignored: `app/build/`, `app/test.html`, `content/out/`, `content/all.json`, `.venv/`.
 
 ## Toolchain and tasks (mise)
 
@@ -57,7 +56,6 @@ mise manages the toolchain and runs every development command. Run work through 
 | `release:diff` | Rebuild and diff against `app/published-cert-srs.html` |
 | `release:compare <read> [file]` | Compare a saved live read with `app/published-cert-srs.html` (or the given file) |
 | `release:record` | Copy the build to `app/published-cert-srs.html` and print the tag to make |
-| `bundle` | Write `cert-srs-build.txt` |
 
 Rules for tasks:
 
@@ -101,6 +99,6 @@ Releases write only `exams/`, `concepts/` and `heldout/`. The `data/users/` and 
 
 Review rows written before app 1.3.2 carry `sched: "certanki-sched/1.1.0"` (the project's old name). Treat it as the same scheduler as `cert-srs-sched/1.1.0`.
 
-## Exporting for the claude.ai Project
+## The claude.ai Project
 
-`mise run bundle` writes `cert-srs-build.txt` from the tracked files. Run it after a release and give Josh the file to upload to the Project. Edit the repo, then regenerate; the bundle is never edited by hand.
+The Project reads the code from the public GitHub repo (https://github.com/JoshuaBotha/cert-srs). Push after every release so it sees the current code.

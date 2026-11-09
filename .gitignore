@@ -24,8 +24,5 @@ __pycache__/
 # macOS
 .DS_Store
 
-# generated export of this repo (python3 tools/bundle.py)
-cert-srs-build.txt
-
 # mise-managed Python virtualenv
 .venv/

@@ -70,8 +70,6 @@ python3 shots_batch.py test.html shot '[["dea-2-4-database-connector-parts","sce
 
 `shots.py` reads a `fixture.json`. Make it first with `node -e "process.stdout.write(JSON.stringify(require('./testdata.js')))" > fixture.json`.
 
-`python3 tools/bundle.py` (from the repo root) writes `cert-srs-build.txt`, every file git tracks as one text file, for upload to the claude.ai Project.
-
 ## Decisions the tests rely on
 
 **ts-fsrs and py-fsrs conventions.**

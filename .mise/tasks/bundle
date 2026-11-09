@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Write cert-srs-build.txt, the one-file export for the claude.ai Project"
-set -euo pipefail
-python tools/bundle.py
