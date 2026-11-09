@@ -1,0 +1,3 @@
+{ "name": "cert-srs-scheduler", "private": true, "version": "1.1.0",
+  "scripts": { "test": "node unit.test.js", "pacing": "node pacing.sim.js", "fsrs-check": "node ts_run.js" },
+  "dependencies": { "ts-fsrs": "5.4.2" } }

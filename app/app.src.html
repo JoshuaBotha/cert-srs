@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cert SRS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F7F6; --surface: #FFFFFF; --ink: #18201D; --muted: #5B6863; --rule: #D9DFDC;
+  --accent: #2D6A5C; --accent-ink: #FFFFFF; --good: #2D6A5C; --bad: #9C4235;
+  --sel: #E4EEEA; --code: #EDF1EF; --mask: #18201D; --dia-filter: none;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101513; --surface: #161C19; --ink: #E4EAE7; --muted: #97A39E; --rule: #2A332F;
+    --accent: #86C2B2; --accent-ink: #0D1311; --good: #86C2B2; --bad: #E2917F;
+    --sel: #1E2A26; --code: #1B2320; --mask: #E4EAE7; --dia-filter: invert(1) hue-rotate(180deg);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101513; --surface: #161C19; --ink: #E4EAE7; --muted: #97A39E; --rule: #2A332F;
+  --accent: #86C2B2; --accent-ink: #0D1311; --good: #86C2B2; --bad: #E2917F;
+  --sel: #1E2A26; --code: #1B2320; --mask: #E4EAE7; --dia-filter: invert(1) hue-rotate(180deg);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; min-height: 100%; background: var(--bg); color: var(--ink);
+  font-family: "Literata", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  font-size: 17px; line-height: 1.55; font-optical-sizing: auto;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+button { font: inherit; color: inherit; }
+a { color: var(--accent); text-underline-offset: 0.18em; }
+code, pre { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); }
+.top-in { max-width: 36rem; margin: 0 auto; padding: 12px 20px 0; display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; color: var(--muted); }
+.top-in b { color: var(--ink); font-weight: 600; }
+.budget { max-width: 36rem; margin: 10px auto 0; padding: 0 20px; }
+.budget-track { height: 2px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+.budget-fill { height: 100%; background: var(--accent); width: 100%; transition: width .6s ease; }
+.sync { color: var(--bad); font-size: 13px; margin-left: 10px; background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+
+main { max-width: 36rem; margin: 0 auto; padding: 24px 20px 150px; }
+.card-head { display: flex; justify-content: flex-end; margin-bottom: 6px; min-height: 28px; }
+.flag-btn { background: none; border: 0; color: var(--muted); font-size: 14px; padding: 4px 0 4px 12px; cursor: pointer; text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 0.2em; }
+.q { font-size: 1.1875rem; line-height: 1.55; }
+.q p { margin: 0 0 0.8em; }
+.q p:last-child { margin-bottom: 0; }
+.q code, .ans code, .opt code, .why code { font-size: 0.86em; background: var(--code); padding: 0.05em 0.3em; border-radius: 4px; }
+pre.code { background: var(--code); border-radius: 10px; padding: 14px 16px; font-size: 14.5px; line-height: 1.6; margin: 18px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre.code .ln { display: block; }
+pre.code .ln.i0 { padding-left: 2ch; text-indent: -2ch; }
+pre.code .ln.i2 { padding-left: 4ch; text-indent: -4ch; }
+pre.code .ln.i4 { padding-left: 6ch; text-indent: -6ch; }
+pre.code .ln.i6 { padding-left: 8ch; text-indent: -8ch; }
+pre.code .ln.i8 { padding-left: 10ch; text-indent: -10ch; }
+pre.code .ln.i10 { padding-left: 12ch; text-indent: -12ch; }
+pre.code .ln.i12 { padding-left: 14ch; text-indent: -14ch; }
+@media (max-width: 480px) { pre.code { font-size: 13.5px; padding: 12px 14px; } }
+.gap { display: inline-block; width: 6.5em; height: 1.05em; border-bottom: 2px solid var(--ink); vertical-align: -0.12em; }
+pre .gap { width: 9ch; height: 1.1em; vertical-align: -0.2em; text-indent: 0; }
+.gap.filled { width: auto; height: auto; border-bottom-color: var(--accent); font-weight: 600; padding: 0 0.15em; vertical-align: baseline; }
+.pick { margin: 14px 0 0; font-style: italic; color: var(--muted); }
+
+.dia { position: relative; margin: 18px 0 0; width: 100%; }
+.dia img { display: block; width: 100%; height: auto; filter: var(--dia-filter); }
+.mask { position: absolute; background: var(--mask); border-radius: 6px; }
+.mask.open { background: transparent; outline: 2.5px solid var(--accent); outline-offset: 2px; }
+
+.ans { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.ans .a { font-size: 1.1875rem; font-weight: 600; margin: 0 0 8px; }
+.ans .r { margin: 0 0 12px; }
+.ans .src { font-size: 15px; }
+.where { margin: 18px 0 0; font-size: 14px; color: var(--muted); line-height: 1.45; }
+
+.opts { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 10px; }
+.opt { width: 100%; text-align: left; display: grid; grid-template-columns: 1.6em 1fr; gap: 8px; align-items: start; background: var(--surface); border: 1.5px solid var(--rule); border-radius: 12px; padding: 13px 14px; cursor: pointer; font-size: 1rem; line-height: 1.5; }
+.opt .k { color: var(--muted); font-weight: 600; }
+.opt[aria-pressed="true"] { border-color: var(--ink); background: var(--sel); }
+.opt:disabled { cursor: default; }
+.opt.ok { border-color: var(--good); }
+.opt.no { border-color: var(--bad); }
+.opt .why { grid-column: 2; font-size: 15px; color: var(--muted); margin: 4px 0 0; }
+.opt .verdict { grid-column: 2; font-size: 14px; font-weight: 600; margin: 6px 0 0; }
+.opt.ok .verdict { color: var(--good); }
+.opt.no .verdict { color: var(--bad); }
+.result { margin: 22px 0 0; font-weight: 600; }
+
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--bg); border-top: 1px solid var(--rule); padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)); }
+.bar-in { max-width: 36rem; margin: 0 auto; padding: 0 20px; display: flex; gap: 12px; }
+.btn { flex: 1; min-height: 52px; border-radius: 12px; border: 1.5px solid var(--ink); background: transparent; font-weight: 600; font-size: 17px; cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn[aria-pressed="true"] { background: var(--sel); }
+.btn.quiet { flex: 0 0 auto; padding: 0 18px; border-color: var(--rule); }
+button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+
+.state { padding-top: 12vh; }
+.state h1 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; margin: 0 0 12px; }
+.state p { margin: 0 0 10px; color: var(--muted); }
+
+dialog { border: 0; padding: 0; background: transparent; max-width: none; width: 100%; margin: auto 0 0; color: var(--ink); }
+dialog::backdrop { background: rgba(8, 12, 10, .45); }
+.sheet { background: var(--surface); border-radius: 18px 18px 0 0; max-width: 36rem; margin: 0 auto; padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
+.sheet h2 { font-size: 1.15rem; margin: 0 0 4px; }
+.sheet .sub { color: var(--muted); font-size: 15px; margin: 0 0 14px; }
+.reasons { display: grid; gap: 8px; margin: 0 0 14px; }
+.reasons label { display: flex; gap: 12px; align-items: center; border: 1.5px solid var(--rule); border-radius: 12px; padding: 12px 14px; cursor: pointer; }
+.reasons input { accent-color: var(--accent); width: 18px; height: 18px; margin: 0; }
+.reasons label:has(input:checked) { border-color: var(--ink); background: var(--sel); }
+.sheet textarea { width: 100%; min-height: 84px; font: inherit; font-size: 16px; color: var(--ink); background: var(--bg); border: 1.5px solid var(--rule); border-radius: 12px; padding: 10px 12px; margin: 0 0 14px; resize: vertical; }
+.sheet .row { display: flex; gap: 12px; }
+.toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 15px; z-index: 20; }
+@media (prefers-reduced-motion: reduce) { .budget-fill { transition: none; } }
+
+/* ---------- milestone 4: tabs, progress, notes, settings ---------- */
+.tabs { max-width: 36rem; margin: 0 auto; padding: 8px 20px 0; display: flex; gap: 22px; font-size: 15px; }
+.tabs[hidden] { display: none; }
+.tabs button { background: none; border: 0; padding: 6px 0 5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+.tabs button[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.top.away .top-in, .top.away .budget { display: none; }
+.top.away { border-bottom: 1px solid var(--rule); }
+.page h1 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; margin: 0 0 6px; }
+.page .lede { color: var(--muted); font-size: 15px; margin: 0 0 6px; }
+.est { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 2px; }
+.big { font-size: 3.25rem; font-weight: 600; line-height: 1.05; margin: 0 0 10px; font-variant-numeric: tabular-nums; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 0.18em; cursor: pointer; font-size: 15px; }
+.sec { margin: 30px 0 0; }
+.sec h2 { font-size: 1.1rem; font-weight: 600; margin: 0 0 10px; }
+.dom { padding: 14px 0 12px; border-top: 1px solid var(--rule); }
+.dom-h { display: flex; justify-content: space-between; gap: 14px; align-items: baseline; }
+.dom-h b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.meter { height: 6px; background: var(--rule); border-radius: 3px; overflow: hidden; margin: 8px 0 6px; }
+.meter i { display: block; height: 100%; width: 0; background: var(--accent); }
+.small { font-size: 14px; color: var(--muted); margin: 0; line-height: 1.45; }
+.small + .small { margin-top: 6px; }
+.item { border: 1.5px solid var(--rule); border-radius: 12px; padding: 12px 14px; margin: 0 0 10px; background: var(--surface); }
+.item .meta { font-size: 13.5px; color: var(--muted); margin: 0 0 4px; }
+.item p { margin: 0; }
+.item .acts { display: flex; gap: 18px; margin: 8px 0 0; }
+.item .acts .linkbtn { font-size: 14px; }
+.item .linkbtn.warn { color: var(--bad); }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; margin: 14px 0 0; cursor: pointer; }
+.check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); }
+.tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); }
+.tag.done { color: var(--accent); border-color: var(--accent); }
+.field { margin: 0 0 18px; }
+.field label, .field .l { display: block; font-weight: 600; font-size: 15px; margin: 0 0 6px; }
+.hint { font-size: 13.5px; color: var(--muted); margin: 6px 0 0; line-height: 1.45; }
+.in { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--surface); border: 1.5px solid var(--rule); border-radius: 12px; padding: 11px 12px; min-height: 48px; }
+textarea.in { min-height: 104px; resize: vertical; line-height: 1.5; }
+.in:focus-visible, select:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+.err { color: var(--bad); font-size: 14px; margin: 6px 0 0; }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.row2 .field, .in { min-width: 0; }
+.in, details.more .field { box-sizing: border-box; }
+input[type="date"].in { -webkit-appearance: none; appearance: none; display: block; }
+.stepper { display: grid; grid-template-columns: 56px 1fr 56px; gap: 10px; }
+.stepper .in { text-align: center; font-variant-numeric: tabular-nums; }
+.stepper .btn { min-height: 48px; font-size: 22px; line-height: 1; }
+details.more { border-top: 1px solid var(--rule); padding: 12px 0 0; margin: 0 0 18px; }
+details.more summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+details.more[open] summary { margin: 0 0 14px; }
+.inline-btn { display: block; width: 100%; min-height: 52px; }
+.btn.warn { border-color: var(--bad); color: var(--bad); }
+.filebtn { display: flex; align-items: center; justify-content: center; width: 100%; }
+.formula { font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 14px; line-height: 1.9; background: var(--code); border-radius: 10px; padding: 12px 14px; margin: 0 0 14px; overflow-x: auto; }
+.formula sub { font-size: 0.75em; }
+.defs { margin: 0 0 14px; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 15px; }
+.defs b { font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-weight: 600; font-size: 14px; }
+.sheet .scroll { max-height: 70vh; overflow-y: auto; }
+.mt { margin: 12px 0 0; }
+textarea.in.mono { min-height: 160px; font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/ts-fsrs@5.4.2/dist/index.umd.js"></script>
+</head>
+<body>
+<header class="top" id="top">
+  <nav class="tabs" id="tabs" aria-label="Sections" hidden><button type="button" data-v="today">Today</button><button type="button" data-v="progress">Progress</button><button type="button" data-v="notes">Notes</button><button type="button" data-v="preferences">Settings</button></nav>
+  <div class="top-in" aria-live="polite"><span id="due">&nbsp;</span><span><span id="left">&nbsp;</span><button id="sync" class="sync" hidden></button></span></div>
+  <div class="budget"><div class="budget-track"><div class="budget-fill" id="fill"></div></div></div>
+</header>
+<main id="main"><div class="state"><h1>Loading your cards…</h1></div></main>
+<nav class="bar" id="bar" hidden><div class="bar-in" id="barIn"></div></nav>
+<dialog id="flagDlg"><form class="sheet" method="dialog" id="flagForm">
+  <h2>Flag this card</h2>
+  <p class="sub" id="flagSub">It goes to the weekly session for a fix.</p>
+  <div class="reasons" id="reasons"></div>
+  <textarea id="flagNote" placeholder="What’s wrong? (optional, needed for “Other”)" aria-label="Note"></textarea>
+  <div class="row"><button class="btn" value="cancel" type="submit">Cancel</button><button class="btn primary" id="flagSave" type="button">Save flag</button></div>
+</form></dialog>
+<dialog id="infoDlg"><form class="sheet" method="dialog"><div class="scroll" id="infoBody"></div><div class="row"><button class="btn" value="close" type="submit">Close</button></div></form></dialog>
+<script>
+/*__SCHEDULER__*/
+</script>
+<script>
+(function () {
+  'use strict';
+  var MIN = 60000;
+  var EXAM_DEFAULT = 'databricks-dea';
+  var REASONS = [['wrong', 'Wrong'], ['ambiguous', 'Ambiguous'], ['outdated', 'Outdated'], ['gives-away', 'Gives itself away'], ['other', 'Other']];
+  var $ = function (id) { return document.getElementById(id); };
+  var app = { ready: false, concepts: {}, catalog: {}, states: {}, days: {}, weights: {}, domains: {}, objectives: {}, lastDomain: null, cur: null, pending: 0, saveError: null };
+  var S = null, db = null, base = null, timers = {};
+
+  /* ---------- text helpers ---------- */
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function inline(s) { return esc(s).replace(/`([^`]+)`/g, '<code>$1</code>'); }
+  function paras(s) { return String(s || '').split(/\n{2,}/).map(function (p) { return '<p>' + inline(p).replace(/\n/g, '<br>') + '</p>'; }).join(''); }
+  var GAP = '{{gap}}';
+  function gapped(s, filled, isCode) {
+    var parts = String(s || '').split(GAP), fn = isCode ? esc : inline;
+    return parts.map(fn).join(filled != null ? '<span class="gap filled">' + esc(filled) + '</span>' : '<span class="gap" aria-label="blank"></span>');
+  }
+  /* Code wraps instead of scrolling: one block per line, continuation lines hang 2ch under the line's own indent. */
+  function codeBlock(html) {
+    return '<pre class="code">' + String(html).split('\n').map(function (ln) {
+      var n = Math.min(12, (ln.match(/^ */)[0].length >> 1) << 1);
+      return '<span class="ln i' + n + '">' + (ln || ' ') + '</span>';
+    }).join('') + '</pre>';
+  }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+
+  /* ---------- states ---------- */
+  function setBar(html) { $('barIn').innerHTML = html || ''; $('bar').hidden = !html; }
+  function showState(title, lines, bar) {
+    $('main').innerHTML = '<div class="state"><h1>' + esc(title) + '</h1>' + (lines || []).map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</div>';
+    setBar(bar || '');
+  }
+  function toast(msg) {
+    var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2200);
+  }
+
+  /* ---------- boot ---------- */
+  function boot() {
+    timers.slow = setTimeout(function () {
+      if (!app.ready) showState('Can’t reach your cards yet', ['The page keeps trying. Check your connection if this stays.']);
+    }, 10000);
+    if (typeof FSRS === 'undefined' || typeof CertSched === 'undefined') {
+      clearTimeout(timers.slow);
+      return showState('The scheduler didn’t load', ['The ts-fsrs library from jsDelivr was blocked or failed. Reload the page to try again.']);
+    }
+    if (!window.claude || typeof window.claude.use !== 'function') {
+      clearTimeout(timers.slow);
+      return showState('Open this page in Claude', ['Your cards and progress live in the artifact’s database, which only works inside Claude.']);
+    }
+    Promise.all([window.claude.use('db'), window.claude.use('user')]).then(function (r) {
+      db = r[0];
+      var user = r[1];
+      if (!db) throw { code: 'no_db' };
+      app.user = user;
+      if (!user) return null;
+      return Promise.all([user.id(), user.isOwner()]).then(function (x) { app.owner = !!x[1]; return x[0]; });
+    }).then(function (uid) {
+      if (!uid) throw { code: 'no_user' };
+      app.uid = uid;
+      base = 'data/users/' + uid;
+      return Promise.all([db.doc(base + '/settings').get(), db.doc(base + '/state').get(), db.collection('concepts').get()]);
+    }).then(function (r) {
+      var settings = r[0].exists ? r[0].data() : {};
+      var state = r[1].exists ? r[1].data() : {};
+      app.settingsRaw = settings;
+      app.settings = { exam: settings.exam || EXAM_DEFAULT, dailyMinutes: settings.dailyMinutes || 20, retention: settings.retention || 0.9, examDate: settings.examDate || null };
+      app.days = state.days || {};
+      r[2].docs.forEach(function (d) { var c = d.data(); if (c && c.status !== 'draft' && c.status !== 'retired') app.concepts[d.id] = Object.assign({ id: d.id }, c); });
+      return Promise.all([db.doc('exams/' + app.settings.exam).get(), db.doc(base + '/state').collection('tracks').get()]);
+    }).then(function (r) {
+      var exam = r[0].exists ? r[0].data() : null;
+      (exam && exam.domains || []).forEach(function (d) {
+        app.weights[d.n] = d.weight; app.domains[d.n] = d;
+        (d.objectives || []).forEach(function (o) { app.objectives[o.code] = o.text; });
+      });
+      r[1].docs.forEach(function (d) { var s = d.data(); if (s && s.fsrs) app.states[d.id] = s; });
+      buildCatalog();
+      S = CertSched.create(FSRS, { retention: app.settings.retention, fuzz: true });
+      app.exam = exam;
+      app.ready = true; clearTimeout(timers.slow);
+      $('tabs').hidden = false;
+      route();
+      welcome();
+    }).catch(function (e) {
+      clearTimeout(timers.slow);
+      var code = e && e.code;
+      if (code === 'no_db') return showState('Your cards can’t load here', ['This view has no database access. Open the artifact from Claude while signed in.']);
+      if (code === 'no_user') return showState('Sign in to keep your progress', ['Reviews are saved to your private space, which needs a signed-in Claude account.']);
+      showState('Your cards didn’t load', ['The database answered with “' + (code || 'an error') + '”. Reload to try again.']);
+    });
+  }
+
+  function buildCatalog() {
+    Object.keys(app.concepts).forEach(function (id) {
+      var c = app.concepts[id];
+      var m0 = { concept: id, domain: String(c.domain), objective: String(c.objective), order: c.order || 0 };
+      if (c.recall && c.recall.variants && c.recall.variants.length) app.catalog[id + ':r'] = Object.assign({ track: id + ':r', kind: 'recall' }, m0);
+      if (c.scenario && c.scenario.variants && c.scenario.variants.length) app.catalog[id + ':s'] = Object.assign({ track: id + ':s', kind: 'scenario' }, m0);
+    });
+  }
+  function ctxNow() {
+    var now = Date.now(), key = S.dayKey(now), budget = app.settings.dailyMinutes;
+    return {
+      catalog: app.catalog, states: app.states, weights: app.weights,
+      usedMs: (app.days[key] && app.days[key].ms) || 0, budgetMs: budget * MIN,
+      quota: S.newQuota(app.days, key, budget), lastDomain: app.lastDomain
+    };
+  }
+  function header() {
+    if (!S) return;
+    var ctx = ctxNow(), now = Date.now(), c = S.counts(ctx, now);
+    var leftMs = Math.max(0, ctx.budgetMs - ctx.usedMs);
+    $('due').innerHTML = '<b>' + c.total + '</b> due';
+    $('left').innerHTML = '<b>' + Math.ceil(leftMs / MIN) + '</b> min left';
+    $('fill').style.width = (100 * leftMs / ctx.budgetMs).toFixed(1) + '%';
+    var s = $('sync');
+    if (app.saveError) { s.hidden = false; s.textContent = 'Not saved'; }
+    else if (app.pending > 0) { s.hidden = true; }
+    else s.hidden = true;
+  }
+
+  /* ---------- session ---------- */
+  function nextCard() {
+    clearTimeout(timers.wait);
+    if (app.view !== 'today') return;
+    var now = Date.now(), ctx = ctxNow(), n = S.next(ctx, now);
+    header();
+    if (n.done) return showDone(n.done, ctx, now);
+    if (n.wait) return showWait(n.wait);
+    var meta = app.catalog[n.track], concept = app.concepts[meta.concept];
+    var list = meta.kind === 'recall' ? concept.recall.variants : concept.scenario.variants;
+    var vid = S.pickVariant(app.states[n.track], list.map(function (v) { return v.id; }));
+    var v = list.filter(function (x) { return x.id === vid; })[0];
+    app.cur = {
+      track: n.track, meta: meta, concept: concept, v: v, isNew: n.isNew,
+      phase: 'ask', picked: [], guessed: false, activeMs: 0, runningSince: document.hidden ? null : now,
+      opts: meta.kind === 'scenario' ? S.buildOptions(v) : null
+    };
+    render();
+    window.scrollTo(0, 0);
+  }
+  function showDone(why, ctx, now) {
+    app.cur = null;
+    var t = S.dueTomorrow(ctx, now);
+    var title = why === 'budget' ? 'That’s today’s ' + app.settings.dailyMinutes + ' minutes' : 'Nothing else is due today';
+    showState(title, [
+      'Tomorrow: ' + plural(t, 'review', 'reviews') + ' due, plus new cards if there’s room.',
+    ]);
+    var note = document.createElement('p'); note.id = 'saveNote';
+    note.textContent = app.pending ? 'Saving your last answers…' : 'Everything is saved.';
+    document.querySelector('.state').appendChild(note);
+  }
+  function showWait(ms) {
+    app.cur = null;
+    var mins = Math.max(1, Math.ceil(ms / MIN));
+    showState(plural(mins, 'minute', 'minutes') + ' until the next card', ['A card you missed comes back after a short gap. Leave this open and it will appear, or come back later.']);
+    timers.wait = setTimeout(nextCard, Math.min(ms + 400, MIN));
+  }
+
+  /* ---------- rendering ---------- */
+  function sourceLink(c, v) {
+    var s = (c.sources || [])[v.src || 0];
+    return s ? '<p class="src"><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.title) + '</a></p>' : '';
+  }
+  function where(meta) {
+    var d = app.domains[meta.domain], o = app.objectives[meta.objective];
+    return '<p class="where">' + (d ? esc(d.n + '. ' + d.name) : 'Domain ' + esc(meta.domain)) + '<br>' + esc(meta.objective) + (o ? ' ' + esc(o) : '') + '</p>';
+  }
+  function diagram(c, v, open) {
+    var d = c.diagrams && c.diagrams[v.diagram];
+    if (!d) return '';
+    var pos = d.labels[v.mask] || [0, 0];
+    var box = [100 * pos[0] / d.w, 100 * pos[1] / d.h, 100 * d.box[0] / d.w, 100 * d.box[1] / d.h].join(',');
+    return '<figure class="dia"><img alt="Diagram with one hidden label" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(d.svg) + '"><span class="mask' + (open ? ' open' : '') + '" data-box="' + box + '"></span></figure>';
+  }
+  function render() {
+    var c = app.cur; if (!c) return;
+    var html = '<div class="card-head"><button class="flag-btn" id="flagBtn" type="button">Flag</button></div>';
+    html += c.meta.kind === 'recall' ? recallHtml(c) : scenarioHtml(c);
+    $('main').innerHTML = html;
+    $('flagBtn').onclick = openFlag;
+    Array.prototype.forEach.call(document.querySelectorAll('.mask[data-box]'), function (m) {
+      var b = m.getAttribute('data-box').split(',');
+      m.style.left = b[0] + '%'; m.style.top = b[1] + '%'; m.style.width = b[2] + '%'; m.style.height = b[3] + '%';
+    });
+    if (c.meta.kind === 'recall') recallBar(c); else scenarioBar(c);
+    wire();
+  }
+  function recallHtml(c) {
+    var v = c.v, open = c.phase !== 'ask', h = '';
+    if (v.type === 'cloze') h += '<div class="q"><p>' + gapped(v.text, open ? v.answer : null, false) + '</p></div>';
+    else h += '<div class="q">' + paras(v.prompt) + '</div>';
+    if (v.type === 'code') h += codeBlock(gapped(v.code, open ? v.answer : null, true));
+    else if (v.code) h += codeBlock(esc(v.code));
+    if (v.type === 'occlusion') h += diagram(c.concept, v, open);
+    if (open) {
+      h += '<section class="ans">';
+      if (v.type !== 'cloze' && v.type !== 'code') h += '<p class="a">' + inline(v.answer) + '</p>';
+      h += '<p class="r">' + inline(v.why) + '</p>' + sourceLink(c.concept, v) + where(c.meta) + '</section>';
+    }
+    return h;
+  }
+  function recallBar(c) {
+    if (c.phase === 'ask') setBar('<button class="btn primary" id="reveal" type="button">Show answer</button>');
+    else setBar('<button class="btn" id="fail" type="button">Fail</button><button class="btn primary" id="pass" type="button">Pass</button>');
+  }
+  function scenarioHtml(c) {
+    var v = c.v, done = c.phase !== 'ask', k = v.pick || 1, h = '<div class="q">' + paras(v.stem) + '</div>';
+    if (v.code) h += codeBlock(esc(v.code));
+    if (k > 1) h += '<p class="pick">Choose ' + (k === 2 ? 'two' : k) + '.</p>';
+    h += '<ol class="opts">' + c.opts.map(function (o, i) {
+      var sel = c.picked.indexOf(i) >= 0, cls = done ? (o.ok ? ' ok' : (sel ? ' no' : '')) : '';
+      var verdict = done ? (o.ok ? (sel ? 'Correct, your pick' : 'Correct') : (sel ? 'Your pick, not correct' : '')) : '';
+      return '<li><button class="opt' + cls + '" type="button" data-i="' + i + '" aria-pressed="' + sel + '"' + (done ? ' disabled' : '') + '>' +
+        '<span class="k">' + 'ABCD'[i] + '</span><span>' + inline(o.text) + '</span>' +
+        (done ? (verdict ? '<span class="verdict">' + verdict + '</span>' : '') + '<span class="why">' + inline(o.why) + '</span>' : '') + '</button></li>';
+    }).join('') + '</ol>';
+    if (done) {
+      h += '<p class="result">' + (c.correct ? 'Right.' : 'Not this time.') + '</p>' + sourceLink(c.concept, v) + where(c.meta);
+    }
+    return h;
+  }
+  function scenarioBar(c) {
+    var k = c.v.pick || 1;
+    if (c.phase === 'ask') setBar('<button class="btn primary" id="check" type="button"' + (c.picked.length === k ? '' : ' disabled') + '>Check answer</button>');
+    else setBar((c.correct ? '<button class="btn quiet" id="guess" type="button" aria-pressed="' + c.guessed + '">' + (c.guessed ? 'Marked as guess' : 'I guessed') + '</button>' : '') +
+      '<button class="btn primary" id="next" type="button">Next</button>');
+  }
+  function wire() {
+    var c = app.cur;
+    var on = function (id, fn) { var el = $(id); if (el) el.onclick = fn; };
+    on('reveal', function () { c.phase = 'open'; render(); });
+    on('pass', function () { commit(true); });
+    on('fail', function () { commit(false); });
+    on('check', function () { c.correct = S.scoreOptions(c.opts, c.picked); c.phase = 'open'; render(); });
+    on('guess', function () { c.guessed = !c.guessed; scenarioBar(c); wire(); });
+    on('next', function () { commit(c.correct && !c.guessed); });
+    Array.prototype.forEach.call(document.querySelectorAll('.opt[data-i]'), function (b) {
+      b.onclick = function () {
+        if (c.phase !== 'ask') return;
+        var i = +b.getAttribute('data-i'), k = c.v.pick || 1, at = c.picked.indexOf(i);
+        if (at >= 0) c.picked.splice(at, 1);
+        else if (k === 1) c.picked = [i];
+        else if (c.picked.length < k) c.picked.push(i);
+        render();
+      };
+    });
+  }
+
+  /* ---------- measured time ---------- */
+  document.addEventListener('visibilitychange', function () {
+    var c = app.cur; if (!c) return;
+    if (document.hidden) { if (c.runningSince) { c.activeMs += Date.now() - c.runningSince; c.runningSince = null; } }
+    else { if (!c.runningSince && app.view === 'today') c.runningSince = Date.now(); header(); }
+  });
+
+  /* ---------- grading and saving ---------- */
+  function commit(passed) {
+    var c = app.cur; if (!c || c.committed) return;
+    c.committed = true;
+    var now = Date.now();
+    if (c.runningSince) c.activeMs += now - c.runningSince;
+    var ms = S.measured(c.activeMs);
+    var res = S.applyReview(app.states[c.track], c.meta, c.v.id, passed, now);
+    app.states[c.track] = res.state;
+    app.days = S.addDay(app.days, now, ms);
+    app.lastDomain = c.meta.domain;
+    var row = {
+      t: now, tzOffsetMin: new Date(now).getTimezoneOffset(), day: S.dayKey(now),
+      track: c.track, concept: c.meta.concept, kind: c.meta.kind, variant: c.v.id, variantType: c.v.type || 'scenario',
+      result: passed ? 'pass' : 'fail', rating: res.grade.rating, isNew: c.isNew,
+      stateBefore: res.grade.stateBefore, elapsedDays: res.grade.elapsedDays,
+      durationMs: ms, rawMs: c.activeMs, contentRev: c.concept.rev || 1,
+      sched: S.VERSION, fsrsLib: S.FSRS_LIB, retention: app.settings.retention, params: 'fsrs6-default'
+    };
+    if (c.meta.kind === 'scenario') {
+      row.correct = !!c.correct; row.guessed = !!c.guessed;
+      row.picked = c.picked.map(function (i) { return c.opts[i].text; });
+      row.shown = c.opts.map(function (o) { return o.text; });
+    }
+    var stateRef = db.doc(base + '/state');
+    var rid = now + '_' + c.track;
+    enqueue(function () { return stateRef.collection('reviews').doc(rid).set(row); });
+    enqueue(function () { return stateRef.collection('tracks').doc(c.track).set(res.state); });
+    var days = app.days;
+    enqueue(function () { return stateRef.set({ days: days, updated: now, sched: S.VERSION }); });
+    nextCard();
+  }
+  var queue = Promise.resolve();
+  function enqueue(fn) {
+    app.pending++; header();
+    queue = queue.then(function () { return attempt(fn, 0); }).then(function () {
+      app.pending--; header();
+      var note = $('saveNote');
+      if (note && app.pending === 0) note.textContent = app.saveError ? 'Your last answer couldn’t be saved (' + app.saveError + ').' : 'Everything is saved.';
+    });
+  }
+  function attempt(fn, n) {
+    return Promise.resolve().then(fn).then(function () { if (app.saveError && app.pending <= 1) app.saveError = null; }, function (e) {
+      var code = e && e.code;
+      if ((!code || code === 'unavailable' || code === 'resource_exhausted') && n < 3) {
+        return new Promise(function (r) { setTimeout(r, 700 * (n + 1) + Math.random() * 800); }).then(function () { return attempt(fn, n + 1); });
+      }
+      app.saveError = code || 'error';
+    });
+  }
+  $('sync').onclick = function () {
+    alert('Your last answer couldn’t be saved (' + app.saveError + '). It still counts on this screen. Keep this page open and it will try again with your next answer.');
+  };
+  window.addEventListener('beforeunload', function (e) { if (app.pending > 0) { e.preventDefault(); e.returnValue = ''; } });
+
+  /* ---------- flags ---------- */
+  $('reasons').innerHTML = REASONS.map(function (r, i) {
+    return '<label><input type="radio" name="reason" value="' + r[0] + '"' + (i === 0 ? ' checked' : '') + '><span>' + esc(r[1]) + '</span></label>';
+  }).join('');
+  function openFlag() {
+    var c = app.cur; if (!c) return;
+    if (c.runningSince) { c.activeMs += Date.now() - c.runningSince; c.runningSince = null; }
+    $('flagNote').value = '';
+    $('flagSub').textContent = app.owner ? 'It goes to the weekly session for a fix.' : 'It goes to the person who maintains these cards.';
+    var dlg = $('flagDlg');
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  }
+  $('flagDlg').addEventListener('close', function () { var c = app.cur; if (c && !c.runningSince && !c.committed) c.runningSince = Date.now(); });
+  $('flagSave').onclick = function () {
+    var c = app.cur; if (!c) return;
+    var reason = (document.querySelector('input[name="reason"]:checked') || {}).value || 'other';
+    var note = $('flagNote').value.trim();
+    if (reason === 'other' && !note) { $('flagNote').focus(); $('flagNote').placeholder = 'Add a short note for “Other”'; return; }
+    var now = Date.now();
+    if (!app.owner) {
+      $('flagDlg').close();
+      sendReport({ kind: 'flag', t: now, track: c.track, concept: c.meta.concept, cardKind: c.meta.kind, variant: c.v.id, reason: reason, note: note, contentRev: c.concept.rev || 1 })
+        .then(function () { toast('Sent to the card maintainer'); }, function (e) { toast('Flag not sent (' + errText(e) + ')'); });
+      return;
+    }
+    var flag = { t: now, track: c.track, concept: c.meta.concept, kind: c.meta.kind, variant: c.v.id, reason: reason, note: note, status: 'open', contentRev: c.concept.rev || 1, phase: c.phase };
+    enqueue(function () { return db.doc(base + '/state').collection('flags').doc(now + '_' + c.track).set(flag); });
+    $('flagDlg').close();
+    toast('Flagged for the weekly session');
+  };
+
+  /* ================= milestone 4: progress, notes and settings ================= */
+  var APP_VERSION = 'cert-srs-app/1.3.2';
+  var DAY = 864e5;
+  var VIEWS = { today: 1, progress: 1, notes: 1, preferences: 1 };
+  app.view = 'today';
+  app.notesMode = 'list';
+  app.drafts = { missed: loadDraft('missed'), score: loadDraft('score'), feedback: loadDraft('feedback') };
+
+  function numeric(a, b) { return Number(a) - Number(b); }
+  function pct(x) { return Math.round(100 * x) + '%'; }
+  function fmtDay(ms, withWeekday) { return new Date(ms).toLocaleDateString('en-GB', withWeekday ? { weekday: 'short', day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' }); }
+  function localDate(ms) { var d = new Date(ms); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function parseDay(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? +new Date(+m[1], +m[2] - 1, +m[3], 9, 0, 0) : null; }
+  function page(html) { $('main').innerHTML = '<div class="page">' + html + '</div>'; }
+  function widths() { Array.prototype.forEach.call(document.querySelectorAll('[data-w]'), function (el) { el.style.width = el.getAttribute('data-w') + '%'; }); }
+  function domainName(n) { var d = app.domains[n]; return d ? d.n + '. ' + d.name : ''; }
+  /* A write that resolves or rejects, retrying transient errors: screens outside Today report the outcome directly. */
+  function tryWrite(fn, n) {
+    n = n || 0;
+    return Promise.resolve().then(fn).catch(function (e) {
+      var code = e && e.code;
+      if ((!code || code === 'unavailable' || code === 'resource_exhausted') && n < 4) {
+        return new Promise(function (r) { setTimeout(r, 600 * (n + 1) + Math.random() * 600); }).then(function () { return tryWrite(fn, n + 1); });
+      }
+      throw e;
+    });
+  }
+  function errText(e) { var c = e && e.code; return c === 'quota_exceeded' ? 'the database is full' : (c || 'an error'); }
+
+  /* ---------- navigation: #progress, #notes, #preferences; Today is the default ---------- */
+  function viewFromHash() { var h = (location.hash || '').replace(/^#/, ''); return VIEWS[h] ? h : 'today'; }
+  function pauseCard() { var c = app.cur; if (c && c.runningSince) { c.activeMs += Date.now() - c.runningSince; c.runningSince = null; } }
+  function route() {
+    var v = viewFromHash();
+    if (app.view === 'today' && v !== 'today') pauseCard();
+    app.view = v;
+    $('top').classList.toggle('away', v !== 'today');
+    Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) {
+      if (b.getAttribute('data-v') === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    if (!app.ready) return;
+    clearTimeout(timers.wait);
+    if (v === 'today') {
+      if (!Object.keys(app.catalog).length) return showState('No cards yet', [app.owner ? 'Cards are written in the Cert SRS Project chat. They appear here as soon as they’re saved.' : 'No cards have been published for this exam yet. Check back soon.']);
+      if (app.cur && !app.cur.committed) {
+        if (!document.hidden && !app.cur.runningSince) app.cur.runningSince = Date.now();
+        render(); header();
+      } else nextCard();
+    } else if (v === 'progress') showProgress();
+    else if (v === 'notes') showNotes();
+    else showPrefs();
+    window.scrollTo(0, 0);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) {
+    b.onclick = function () {
+      var v = b.getAttribute('data-v');
+      if (v === 'notes') app.notesMode = 'list';
+      if (viewFromHash() === v) route(); else location.hash = v;
+    };
+  });
+  window.addEventListener('hashchange', route);
+  function openInfo(html) {
+    $('infoBody').innerHTML = html;
+    var dlg = $('infoDlg'); if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  }
+
+  /* ---------- Progress: the spec's readiness estimate, per domain and overall ---------- */
+  function examDay(now) {
+    var t = parseDay(app.settings.examDate);
+    if (t && t > now) return { t: t, booked: true };
+    return { t: now + 14 * DAY, booked: false, passed: !!t };
+  }
+  function readiness(now) {
+    var ex = examDay(now), byObj = {}, written = 0, intro = 0;
+    Object.keys(app.catalog).forEach(function (id) { var m = app.catalog[id]; (byObj[m.objective] = byObj[m.objective] || []).push(id); });
+    var doms = Object.keys(app.domains).sort(numeric).map(function (n) {
+      var d = app.domains[n], objs = d.objectives || [], sum = 0, w = 0, k = 0, started = 0;
+      objs.forEach(function (o) {
+        var ids = byObj[String(o.code)] || [];
+        var live = ids.filter(function (id) { var s = app.states[id]; return s && s.fsrs && s.fsrs.state !== 0 && s.fsrs.lastReview; });
+        w += ids.length; k += live.length; if (live.length) started++;
+        if (!live.length) return;
+        var rbar = live.reduce(function (a, id) { return a + S.retrievability(app.states[id].fsrs, ex.t); }, 0) / live.length;
+        sum += (live.length / ids.length) * rbar;
+      });
+      written += w; intro += k;
+      return { n: n, name: d.name, weight: d.weight || 0, value: objs.length ? sum / objs.length : 0, written: w, intro: k, objectives: objs.length, started: started };
+    });
+    return { exam: ex, domains: doms, overall: doms.reduce(function (a, d) { return a + d.weight * d.value; }, 0), written: written, intro: intro };
+  }
+  function showProgress() {
+    setBar('');
+    var now = Date.now(), r = readiness(now), ex = r.exam;
+    var when = ex.booked
+      ? 'Predicted recall on your exam day, ' + fmtDay(ex.t, true) + ', if you stopped reviewing now, weighted by the exam blueprint.'
+      : 'No exam date is set, so this uses the formula’s default: an exam 14 days from today (' + fmtDay(ex.t, true) + '), with no more reviews before it. Weighted by the exam blueprint.';
+    if (ex.passed) when = 'Your exam date has passed. ' + when;
+    var h = '<p class="est">Estimate</p><p class="big" id="overall">' + pct(r.overall) + '</p>' +
+      '<p class="lede">Overall readiness. ' + esc(when) + '</p>' +
+      '<p><button class="linkbtn" id="howBtn" type="button">How this is worked out</button></p>' +
+      '<p class="small" id="latestScore"></p>';
+    h += '<section class="sec"><h2>By domain</h2>' + r.domains.map(function (d) {
+      return '<div class="dom"><div class="dom-h"><span>' + esc(d.n + '. ' + d.name) + '</span><b>' + pct(d.value) + '</b></div>' +
+        '<div class="meter"><i data-w="' + (100 * d.value).toFixed(1) + '"></i></div>' +
+        '<p class="small">' + pct(d.weight) + ' of the exam · coverage ' + d.intro + ' of ' + plural(d.written, 'track', 'tracks') + ' introduced · ' +
+        d.started + ' of ' + plural(d.objectives, 'objective', 'objectives') + ' started</p></div>';
+    }).join('') + '</section>';
+    h += '<section class="sec"><p class="small">Coverage: ' + r.intro + ' of the ' + plural(r.written, 'track', 'tracks') + ' written so far are introduced. Coverage counts only cards already written, so it reads high while content is still being added.</p>' +
+      '<p class="small">If this estimate and your Academy practice scores (or, later, mock exams) disagree, trust the scores.</p></section>';
+    page(h); widths();
+    $('howBtn').onclick = function () { openInfo(formulaHtml(r)); };
+    latestScore().then(function (s) {
+      var el = $('latestScore'); if (!el || !s) return;
+      el.textContent = 'Latest Academy practice score: ' + s.percent + '%' + (s.test ? ' (' + s.test + ')' : '') + ', ' + fmtDay(parseDay(s.date) || s.t) + '.';
+    });
+  }
+  function formulaHtml(r) {
+    return '<h2>How readiness is worked out</h2>' +
+      '<p class="sub">An estimate from your review history, not a prediction of your score.</p>' +
+      '<div class="formula">Readiness = Σ<sub>d</sub> w<sub>d</sub> · (1 / |O<sub>d</sub>|) · Σ<sub>o ∈ O<sub>d</sub></sub> coverage(o) · R̄(o, t<sub>exam</sub>)</div>' +
+      '<ul class="defs">' +
+      '<li><b>w<sub>d</sub></b> the domain’s weight in the exam guide (6% to 22%).</li>' +
+      '<li><b>O<sub>d</sub></b> the domain’s objectives; each counts equally within its domain.</li>' +
+      '<li><b>coverage(o)</b> the share of the objective’s tracks you’ve been introduced to, out of those written so far.</li>' +
+      '<li><b>R̄(o, t<sub>exam</sub>)</b> the mean predicted recall of those introduced tracks on exam day, with no further reviews (FSRS-6, from each track’s stability).</li>' +
+      '<li><b>t<sub>exam</sub></b> your exam date from Settings, or 14 days from today when none is set. Now: ' + esc(fmtDay(r.exam.t, true)) + '.</li>' +
+      '</ul><p class="small">Held-out mocks (coming later) and Academy practice scores check this estimate. If they disagree, trust them.</p>';
+  }
+
+  /* ---------- Notes: missed Academy questions, Academy scores, open flags ---------- */
+  function notesCol() { return db.doc(base + '/state').collection('notes'); }
+  function flagsCol() { return db.doc(base + '/state').collection('flags'); }
+  function loadNotes() {
+    var mineSent = app.owner ? Promise.resolve(null) : reportsCol().get();
+    return Promise.all([notesCol().get(), flagsCol().get(), mineSent]).then(function (r) {
+      var rows = function (q) { return q.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }).sort(function (a, b) { return b.t - a.t; }); };
+      app.notes = rows(r[0]);
+      app.flags = rows(r[1]);
+      app.reports = r[2] ? rows(r[2]) : [];
+    });
+  }
+
+  /* ---------- feedback: colleagues send flags, suggestions and comments to reports/<their id>/items ---------- */
+  /* Rules: everyone reads cards, only the owner writes them; each viewer writes only their own reports, and only the owner reads all of them. */
+  function reportsCol(uid) { return db.doc('reports/' + (uid || app.uid)).collection('items'); }
+  function sendReport(item) {
+    var now = item.t || Date.now(), id = now + '_' + Math.random().toString(36).slice(2, 8);
+    var doc = Object.assign({ t: now, status: 'open', exam: app.settings.exam, from: app.uid, app: APP_VERSION }, item);
+    app.pending++;
+    return tryWrite(function () { return db.doc('reports/' + app.uid).set({ last: now }); })
+      .then(function () { return tryWrite(function () { return reportsCol().doc(id).set(doc); }); })
+      .then(function () {
+        app.pending--;
+        if (app.reports) app.reports = [Object.assign({ id: id }, doc)].concat(app.reports);
+        return id;
+      }, function (e) { app.pending--; throw e; });
+  }
+  var KIND_TEXT = { flag: 'Card flag', missed: 'Card suggestion', feedback: 'Feedback' };
+  function reportBody(r) {
+    if (r.kind === 'flag') {
+      return '<p>' + esc(excerpt(cardText({ concept: r.concept, kind: r.cardKind, variant: r.variant }), 160) || r.concept) + '</p>' +
+        '<p class="small">' + esc(REASON_TEXT[r.reason] || r.reason) + (r.note ? ': ' + esc(r.note) : '') + '</p>';
+    }
+    if (r.kind === 'missed') {
+      return '<p>' + esc(excerpt(r.question, 240)) + '</p>' + (r.right ? '<p class="small">Right answer: ' + esc(excerpt(r.right, 160)) + '</p>' : '') +
+        (r.where ? '<p class="small">From: ' + esc(r.where) + '</p>' : '');
+    }
+    return '<p>' + paras(r.text) + '</p>';
+  }
+  function statusTag(r) { return r.status === 'resolved' ? '<span class="tag done">Done</span>' : '<span class="tag">Open</span>'; }
+  function loadInbox() {
+    return db.collection('reports').get().then(function (s) {
+      var ids = s.docs.map(function (d) { return d.id; }).filter(function (id) { return id !== app.uid; });
+      return Promise.all(ids.map(function (id) {
+        return reportsCol(id).get().then(function (q) { return q.docs.map(function (d) { return Object.assign({ id: d.id }, d.data(), { from: id }); }); });
+      }));
+    }).then(function (lists) {
+      app.inbox = [].concat.apply([], lists).sort(function (a, b) { return b.t - a.t; });
+      var who = app.inbox.map(function (r) { return r.from; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+      return who.length && app.user ? app.user.profiles(who) : {};
+    }).then(function (ps) { app.names = ps || {}; });
+  }
+  function inboxHtml() {
+    if (!app.inbox) return '<p class="small">Loading…</p>';
+    var open = app.inbox.filter(function (r) { return r.status !== 'resolved'; });
+    var done = app.inbox.filter(function (r) { return r.status === 'resolved'; }).slice(0, 10);
+    var one = function (r) {
+      var p = app.names[r.from], who = (p && p.name) || 'Someone';
+      return '<div class="item"><p class="meta">' + esc([fmtDay(r.t), KIND_TEXT[r.kind] || r.kind, who].join(' · ')) + ' ' + statusTag(r) + '</p>' + reportBody(r) +
+        (r.status !== 'resolved' ? '<div class="acts"><button class="linkbtn" type="button" data-done="' + esc(r.from + '|' + r.id) + '">Mark done</button></div>' : '') + '</div>';
+    };
+    return (open.length ? open.map(one).join('') : '<p class="small">Nothing open. Flags, card suggestions and feedback from colleagues show up here.</p>') +
+      (done.length ? '<details class="more"><summary>Recently done</summary>' + done.map(one).join('') + '</details>' : '');
+  }
+  function showInbox() {
+    var el = $('inbox'); if (!el) return;
+    el.innerHTML = inboxHtml();
+    Array.prototype.forEach.call(el.querySelectorAll('[data-done]'), function (b) {
+      b.onclick = function () {
+        var k = b.getAttribute('data-done').split('|'), r = app.inbox.filter(function (x) { return x.from === k[0] && x.id === k[1]; })[0]; if (!r) return;
+        b.disabled = true;
+        var patch = { status: 'resolved', resolvedOn: localDate(Date.now()) };
+        tryWrite(function () { return reportsCol(r.from).doc(r.id).update(patch); }).then(function () {
+          Object.assign(r, patch); toast('Marked done'); showInbox();
+        }, function (e) { b.disabled = false; toast('Not updated (' + errText(e) + ')'); });
+      };
+    });
+  }
+  function feedbackForm() {
+    var d = app.drafts.feedback;
+    page('<h1>Send feedback</h1><p class="lede">Anything about the app or the cards: what’s confusing, what’s missing, what would help. It goes to the person who maintains Cert SRS.</p>' +
+      '<div class="field"><label for="fText">Your feedback</label><textarea class="in" id="fText" placeholder="e.g. More scenario cards on Unity Catalog, please">' + esc(d.fText || '') + '</textarea></div>' +
+      '<p class="err" id="formErr" role="alert"></p>');
+    bindDraft('feedback', ['fText']);
+    formBar('feedback', 'Send', function () {
+      var text = fv('fText'), btn = $('formSave');
+      if (!text) { $('formErr').textContent = 'Write something first.'; $('fText').focus(); return; }
+      btn.disabled = true;
+      sendReport({ kind: 'feedback', text: text }).then(function () {
+        dropDraft('feedback'); app.notesMode = 'list';
+        if (app.view === 'notes') { showNotes(); window.scrollTo(0, 0); }
+        toast('Thanks, feedback sent');
+      }, function (e) { btn.disabled = false; $('formErr').textContent = 'Not sent (' + errText(e) + '). Your text is still here; try again.'; });
+    });
+  }
+  function welcome() {
+    if (app.owner) return;
+    var seen = null; try { seen = localStorage.getItem('cert-srs-welcome-1'); } catch (e) { /* show it */ }
+    if (seen) return;
+    try { localStorage.setItem('cert-srs-welcome-1', '1'); } catch (e) { /* a convenience */ }
+    openInfo(ABOUT_HTML);
+  }
+  var ABOUT_HTML = '<h2>Welcome to Cert SRS</h2>' +
+    '<p>A spaced-repetition deck for the Databricks Data Engineer Associate exam. Each day it schedules the cards you’re due to forget, plus a few new ones weighted toward the exam guide.</p>' +
+    '<p><b>This is a beta.</b> The cards are written by a colleague and checked against the Databricks documentation, but they aren’t official Databricks material and some will be wrong or out of date.</p>' +
+    '<p>If a card looks off, tap <b>Flag</b>. For anything else, use <b>Notes → Send feedback</b>. Your progress is private to you; only flags and feedback you send are shared with the maintainer.</p>';
+  function latestScore() {
+    var p = app.notes ? Promise.resolve() : loadNotes();
+    return p.then(function () {
+      var s = app.notes.filter(function (n) { return n.kind === 'score'; });
+      s.sort(function (a, b) { return (b.date || '').localeCompare(a.date || '') || b.t - a.t; });
+      return s[0] || null;
+    }, function () { return null; });
+  }
+  function loadDraft(kind) { try { return JSON.parse(localStorage.getItem('cert-srs-draft-' + kind) || '{}') || {}; } catch (e) { return {}; } }
+  function keepDraft(kind) { try { localStorage.setItem('cert-srs-draft-' + kind, JSON.stringify(app.drafts[kind])); } catch (e) { /* drafts are a convenience */ } }
+  function dropDraft(kind) { app.drafts[kind] = {}; try { localStorage.removeItem('cert-srs-draft-' + kind); } catch (e) { /* ignore */ } }
+  function excerpt(s, n) { s = String(s || '').replace(/\{\{gap\}\}/g, '____').replace(/`/g, '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+  function cardText(f) {
+    var c = app.concepts[f.concept]; if (!c) return '';
+    var list = (f.kind === 'scenario' ? (c.scenario || {}).variants : (c.recall || {}).variants) || [];
+    var v = list.filter(function (x) { return x.id === f.variant; })[0];
+    return v ? (v.prompt || v.text || v.stem || '') : '';
+  }
+  var REASON_TEXT = {}; REASONS.forEach(function (r) { REASON_TEXT[r[0]] = r[1]; });
+
+  function showNotes() {
+    if (app.notesMode === 'missed') return missedForm();
+    if (app.notesMode === 'score') return scoreForm();
+    if (app.notesMode === 'feedback') return feedbackForm();
+    setBar((app.owner ? '' : '<button class="btn" id="newFeedback" type="button">Send feedback</button>') + '<button class="btn" id="newScore" type="button">Log a score</button><button class="btn primary" id="newMissed" type="button">Missed question</button>');
+    if ($('newFeedback')) $('newFeedback').onclick = function () { app.notesMode = 'feedback'; app.editing = null; showNotes(); window.scrollTo(0, 0); };
+    $('newMissed').onclick = function () { app.notesMode = 'missed'; app.editing = null; showNotes(); window.scrollTo(0, 0); };
+    $('newScore').onclick = function () { app.notesMode = 'score'; app.editing = null; showNotes(); window.scrollTo(0, 0); };
+    if (!app.notes) page('<h1>Notes</h1><p class="lede">Loading…</p>');
+    else notesList();
+    if (app.owner) loadInbox().then(function () { if (app.view === 'notes' && app.notesMode === 'list') showInbox(); }, function (e) {
+      var el = $('inbox'); if (el) el.innerHTML = '<p class="err">Colleagues’ reports didn’t load (' + esc(errText(e)) + '). Open Notes again to retry.</p>';
+    });
+    loadNotes().then(function () { if (app.view === 'notes' && app.notesMode === 'list') notesList(); }, function (e) {
+      if (app.view === 'notes' && app.notesMode === 'list' && !app.notes) page('<h1>Notes</h1><p class="err">Your notes didn’t load (' + esc(errText(e)) + '). Open Notes again to retry.</p>');
+    });
+  }
+  function notesList() {
+    var missed = app.notes.filter(function (n) { return n.kind === 'missed'; });
+    var waiting = missed.filter(function (n) { return n.status !== 'processed'; });
+    var done = missed.filter(function (n) { return n.status === 'processed'; });
+    var scores = app.notes.filter(function (n) { return n.kind === 'score'; }).sort(function (a, b) { return (b.date || '').localeCompare(a.date || '') || b.t - a.t; });
+    var flags = app.flags.filter(function (f) { return f.status !== 'resolved'; });
+    var h = '<h1>Notes</h1><p class="lede">' + (app.owner ? 'Everything here waits for the weekly session in the Project chat.' : 'Missed questions and scores are private to you. Flags, card suggestions and feedback go to the person who maintains the cards.') + '</p>';
+    if (app.owner) h += '<section class="sec"><h2>From colleagues</h2><div id="inbox">' + inboxHtml() + '</div></section>';
+    h += '<section class="sec" id="waiting"><h2>Missed questions waiting</h2>' + (waiting.length ? waiting.map(function (n) {
+      return '<div class="item"><p class="meta">' + esc([fmtDay(n.t), n.where, n.domain ? 'Domain ' + n.domain : ''].filter(Boolean).join(' · ')) + '</p>' +
+        '<p>' + esc(excerpt(n.question, 200)) + '</p><div class="acts"><button class="linkbtn" type="button" data-edit="' + esc(n.id) + '">Edit</button>' +
+        '<button class="linkbtn warn" type="button" data-del="' + esc(n.id) + '">Delete</button></div></div>';
+    }).join('') : '<p class="small">Nothing waiting. Missed a question in an Academy quiz or practice test? Capture it with Missed question.</p>') + '</section>';
+    if (!app.owner) h += '<section class="sec" id="sent"><h2>Sent to the maintainer</h2>' + ((app.reports || []).length ? app.reports.slice(0, 30).map(function (r) {
+      return '<div class="item"><p class="meta">' + esc(fmtDay(r.t) + ' · ' + (KIND_TEXT[r.kind] || r.kind)) + ' ' + statusTag(r) + '</p>' + reportBody(r) + '</div>';
+    }).join('') : '<p class="small">Nothing sent yet. Flag a card that looks wrong, or use Send feedback.</p>') + '</section>';
+    if (app.owner || flags.length) h += '<section class="sec" id="flagged"><h2>Flagged cards awaiting a fix</h2>' + (flags.length ? flags.map(function (f) {
+      return '<div class="item"><p class="meta">' + esc(fmtDay(f.t) + ' · ' + (REASON_TEXT[f.reason] || f.reason)) + '</p><p>' + esc(excerpt(cardText(f), 160)) + '</p>' +
+        (f.note ? '<p class="small">Your note: ' + esc(f.note) + '</p>' : '') + '</div>';
+    }).join('') : '<p class="small">No open flags. Use Flag on any card that’s wrong, ambiguous, outdated or gives itself away.</p>') + '</section>';
+    h += '<section class="sec" id="scores"><h2>Academy practice scores</h2>' + (scores.length ? scores.map(function (n) {
+      var doms = Object.keys(n.domains || {}).sort(numeric).map(function (k) { return 'D' + k + ': ' + n.domains[k]; });
+      return '<div class="item"><p class="meta">' + esc([fmtDay(parseDay(n.date) || n.t), n.test, n.questions ? n.questions + ' questions' : ''].filter(Boolean).join(' · ')) + '</p>' +
+        '<p><b>' + esc(n.percent) + '%</b></p>' + (doms.length ? '<p class="small">' + esc(doms.join(' · ')) + '</p>' : '') + (n.note ? '<p class="small">' + esc(n.note) + '</p>' : '') +
+        (n.status !== 'processed' ? '<div class="acts"><button class="linkbtn" type="button" data-edit="' + esc(n.id) + '">Edit</button><button class="linkbtn warn" type="button" data-del="' + esc(n.id) + '">Delete</button></div>' : '') + '</div>';
+    }).join('') : '<p class="small">No scores yet. Log each Academy practice test here; Progress shows the latest beside the estimate.</p>') + '</section>';
+    if (done.length) h += '<section class="sec" id="processed"><h2>Processed</h2>' + done.slice(0, 10).map(function (n) {
+      return '<div class="item"><p class="meta">' + esc(fmtDay(n.t) + (n.processedOn ? ' · processed ' + n.processedOn : '')) + '</p><p>' + esc(excerpt(n.question, 120)) + '</p>' +
+        (n.result ? '<p class="small">' + esc(n.result) + '</p>' : '') + '</div>';
+    }).join('') + '</section>';
+    page(h);
+    if (app.owner) showInbox();
+    Array.prototype.forEach.call(document.querySelectorAll('[data-edit]'), function (b) {
+      b.onclick = function () {
+        var n = app.notes.filter(function (x) { return x.id === b.getAttribute('data-edit'); })[0]; if (!n) return;
+        app.editing = n; app.notesMode = n.kind; showNotes(); window.scrollTo(0, 0);
+      };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-del]'), function (b) {
+      b.onclick = function () {
+        if (!b.getAttribute('data-armed')) {
+          b.setAttribute('data-armed', '1'); b.textContent = 'Tap again to delete';
+          setTimeout(function () { if (b.isConnected) { b.removeAttribute('data-armed'); b.textContent = 'Delete'; } }, 4000);
+          return;
+        }
+        var id = b.getAttribute('data-del'); b.disabled = true;
+        tryWrite(function () { return notesCol().doc(id).delete(); }).then(function () {
+          app.notes = app.notes.filter(function (x) { return x.id !== id; }); toast('Deleted'); if (app.view === 'notes' && app.notesMode === 'list') notesList();
+        }, function (e) { b.disabled = false; toast('Not deleted (' + errText(e) + ')'); });
+      };
+    });
+  }
+  function domainOptions(sel) {
+    return '<option value="">Not sure</option>' + Object.keys(app.domains).sort(numeric).map(function (n) {
+      return '<option value="' + esc(n) + '"' + (String(sel) === n ? ' selected' : '') + '>' + esc(domainName(n)) + '</option>';
+    }).join('');
+  }
+  function datalist(id, values) {
+    var seen = {}; values.forEach(function (v) { if (v) seen[v] = 1; });
+    return '<datalist id="' + id + '">' + Object.keys(seen).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('') + '</datalist>';
+  }
+  /* Form fields mirror into a draft as you type, so leaving the screen (or closing the page) keeps your text. */
+  function bindDraft(kind, ids) {
+    ids.forEach(function (id) {
+      var el = $(id); if (!el) return;
+      el.addEventListener('input', function () { if (!app.editing) { app.drafts[kind][id] = el.value; keepDraft(kind); } });
+    });
+  }
+  function fv(id) { var el = $(id); return el ? el.value.trim() : ''; }
+  function formBar(kind, saveText, save) {
+    setBar('<button class="btn" id="formCancel" type="button">Cancel</button><button class="btn primary" id="formSave" type="button">' + saveText + '</button>');
+    $('formCancel').onclick = function () { app.notesMode = 'list'; app.editing = null; showNotes(); window.scrollTo(0, 0); };
+    $('formSave').onclick = save;
+  }
+  function saveNote(kind, data, btn) {
+    var now = Date.now(), ed = app.editing, id = ed ? ed.id : now + '_' + kind;
+    var doc = Object.assign({ t: ed ? ed.t : now, kind: kind, status: 'open', exam: app.settings.exam }, data, ed ? { edited: now } : {});
+    btn.disabled = true; app.pending++;
+    return tryWrite(function () { return notesCol().doc(id).set(doc); }).then(function () {
+      app.pending--;
+      if (!ed) dropDraft(kind);
+      var rest = (app.notes || []).filter(function (x) { return x.id !== id; });
+      app.notes = [Object.assign({ id: id }, doc)].concat(rest).sort(function (a, b) { return b.t - a.t; });
+      app.editing = null; app.notesMode = 'list';
+      if (app.view === 'notes') { showNotes(); window.scrollTo(0, 0); }
+      toast(ed ? 'Note updated' : (app.owner ? 'Saved for the weekly session' : 'Saved'));
+    }, function (e) {
+      app.pending--; btn.disabled = false;
+      var el = $('formErr'); if (el) el.textContent = 'Not saved (' + errText(e) + '). Your text is still here; try again.';
+    });
+  }
+  function missedForm() {
+    var d = app.editing || app.drafts.missed, get = function (k, alt) { return d[k] != null ? d[k] : (d[alt] || ''); };
+    var places = (app.notes || []).map(function (n) { return n.where; });
+    page('<h1>' + (app.editing ? 'Edit missed question' : 'Missed question') + '</h1>' +
+      '<p class="lede">Write it in your own words, not Academy’s. ' + (app.owner ? 'The weekly session turns it into new cards written from the docs.' : 'It stays in your notes. Tick Suggest a card to send it to the person who maintains the cards.') + '</p>' +
+      '<div class="field"><label for="mWhere">Where you met it</label><input class="in" id="mWhere" list="whereList" autocomplete="off" placeholder="e.g. Lakeflow Jobs course, module quiz" value="' + esc(get('mWhere', 'where')) + '">' + datalist('whereList', places) + '</div>' +
+      '<div class="field"><label for="mQuestion">The question, in your own words</label><textarea class="in" id="mQuestion" placeholder="What it asked and the detail that mattered">' + esc(get('mQuestion', 'question')) + '</textarea></div>' +
+      '<details class="more"' + (get('mMine', 'mine') || get('mRight', 'right') || get('mDomain', 'domain') ? ' open' : '') + '><summary>More detail (optional)</summary>' +
+      '<div class="field"><label for="mMine">What you chose, and why</label><textarea class="in" id="mMine">' + esc(get('mMine', 'mine')) + '</textarea></div>' +
+      '<div class="field"><label for="mRight">The right answer, if Academy showed it</label><textarea class="in" id="mRight">' + esc(get('mRight', 'right')) + '</textarea></div>' +
+      '<div class="field"><label for="mDomain">Exam domain</label><select class="in" id="mDomain">' + domainOptions(get('mDomain', 'domain')) + '</select></div></details>' +
+      (app.owner || app.editing ? '' : '<label class="check"><input type="checkbox" id="mSuggest" checked><span>Suggest a card from this (sends it to the maintainer)</span></label>') +
+      '<p class="err" id="formErr" role="alert"></p>');
+    bindDraft('missed', ['mWhere', 'mQuestion', 'mMine', 'mRight', 'mDomain']);
+    $('mDomain').addEventListener('change', function () { if (!app.editing) { app.drafts.missed.mDomain = $('mDomain').value; keepDraft('missed'); } });
+    formBar('missed', app.editing ? 'Save changes' : 'Save note', function () {
+      var q = fv('mQuestion');
+      if (!q) { $('formErr').textContent = 'Add the question in your own words first.'; $('mQuestion').focus(); return; }
+      var data = { where: fv('mWhere'), question: q, mine: fv('mMine'), right: fv('mRight'), domain: fv('mDomain') };
+      if ($('mSuggest') && $('mSuggest').checked) sendReport(Object.assign({ kind: 'missed' }, data)).then(null, function (e) { toast('Suggestion not sent (' + errText(e) + ')'); });
+      saveNote('missed', data, $('formSave'));
+    });
+  }
+  function scoreForm() {
+    var d = app.editing || app.drafts.score, get = function (k, alt) { return d[k] != null ? d[k] : (d[alt] != null ? String(d[alt]) : ''); };
+    var tests = (app.notes || []).map(function (n) { return n.test; });
+    var doms = Object.keys(app.domains).sort(numeric);
+    var edDom = (app.editing && app.editing.domains) || {};
+    page('<h1>' + (app.editing ? 'Edit Academy score' : 'Academy practice score') + '</h1>' +
+      '<p class="lede">' + (app.owner ? 'Logged for the weekly session and shown beside the readiness estimate.' : 'Shown beside the readiness estimate. Only you see it.') + '</p>' +
+      '<div class="row2"><div class="field"><label for="sDate">Date</label><input class="in" type="date" id="sDate" value="' + esc(get('sDate', 'date') || localDate(Date.now())) + '"></div>' +
+      '<div class="field"><label for="sPct">Score (%)</label><input class="in" type="number" inputmode="decimal" min="0" max="100" step="any" id="sPct" value="' + esc(get('sPct', 'percent')) + '"></div></div>' +
+      '<div class="row2"><div class="field"><label for="sTest">Which test</label><input class="in" id="sTest" list="testList" autocomplete="off" placeholder="e.g. Practice exam" value="' + esc(get('sTest', 'test')) + '">' + datalist('testList', tests) + '</div>' +
+      '<div class="field"><label for="sQs">Questions (optional)</label><input class="in" type="number" inputmode="numeric" min="1" step="1" id="sQs" value="' + esc(get('sQs', 'questions')) + '"></div></div>' +
+      '<details class="more"' + (Object.keys(edDom).length || doms.some(function (n) { return app.drafts.score['sD' + n]; }) ? ' open' : '') + '><summary>Per-domain notes, where Academy shows them</summary>' +
+      doms.map(function (n) {
+        var val = app.editing ? (edDom[n] || '') : (app.drafts.score['sD' + n] || '');
+        return '<div class="field"><label for="sD' + n + '">' + esc(domainName(n)) + '</label><input class="in" id="sD' + n + '" autocomplete="off" placeholder="e.g. 60%, or weak on CDC" value="' + esc(val) + '"></div>';
+      }).join('') + '</details>' +
+      '<div class="field"><label for="sNote">Note (optional)</label><textarea class="in" id="sNote">' + esc(get('sNote', 'note')) + '</textarea></div>' +
+      '<p class="err" id="formErr" role="alert"></p>');
+    bindDraft('score', ['sDate', 'sPct', 'sTest', 'sQs', 'sNote'].concat(doms.map(function (n) { return 'sD' + n; })));
+    formBar('score', app.editing ? 'Save changes' : 'Save score', function () {
+      var p = fv('sPct'), x = Number(p), date = fv('sDate'), qs = fv('sQs');
+      if (!parseDay(date)) { $('formErr').textContent = 'Pick the date you took it.'; $('sDate').focus(); return; }
+      if (p === '' || !(x >= 0 && x <= 100)) { $('formErr').textContent = 'Enter the score as a percentage from 0 to 100.'; $('sPct').focus(); return; }
+      if (qs && !(Number(qs) >= 1 && Number(qs) % 1 === 0)) { $('formErr').textContent = 'Questions should be a whole number, or leave it blank.'; $('sQs').focus(); return; }
+      var per = {}; doms.forEach(function (n) { var t = fv('sD' + n); if (t) per[n] = t; });
+      var data = { date: date, percent: Math.round(x * 10) / 10, test: fv('sTest'), domains: per, note: fv('sNote') };
+      if (qs) data.questions = Number(qs);
+      saveNote('score', data, $('formSave'));
+    });
+  }
+
+  /* ---------- Settings: exam date, daily minutes, backup and restore ---------- */
+  function showPrefs() {
+    var ex = app.exam || {}, mins = app.settings.dailyMinutes, date = app.settings.examDate || '';
+    var last = null; try { last = Number(localStorage.getItem('cert-srs-last-backup')) || null; } catch (e) { /* none */ }
+    page('<h1>Settings</h1>' +
+      '<section class="sec"><h2>Exam</h2><p class="small">' + esc(ex.name || app.settings.exam) + '</p></section>' +
+      '<section class="sec"><div class="field"><label for="examDate">Exam date</label><input class="in" type="date" id="examDate" value="' + esc(date) + '">' +
+      '<p class="hint">Saved for readiness, which predicts recall on this day. Exam-date mode (no new cards in the last weeks, higher retention) arrives in a later update.</p>' +
+      '<p class="hint"><button class="linkbtn" type="button" id="clearDate">Clear the date</button></p></div>' +
+      '<div class="field"><span class="l" id="minsLabel">Daily minutes</span><div class="stepper"><button class="btn" type="button" id="minDown" aria-label="Fewer minutes">−</button>' +
+      '<input class="in" type="number" inputmode="numeric" min="5" max="120" step="5" id="mins" aria-labelledby="minsLabel" value="' + esc(mins) + '">' +
+      '<button class="btn" type="button" id="minUp" aria-label="More minutes">+</button></div>' +
+      '<p class="hint">Measured review time per day. New cards are paced to keep the week near this.</p></div>' +
+      '<p class="err" id="prefsErr" role="alert"></p></section>' +
+      '<section class="sec"><h2>Backup</h2><p class="small">' + (app.owner ? 'One JSON file with every card and all your private rows: settings, card states, reviews, flags and notes.' : 'One JSON file with all your private rows: settings, card states, reviews and notes.') + '</p>' +
+      '<p class="small" id="lastBackup">' + (last ? 'Last backup from this browser: ' + esc(fmtDay(last)) + '.' : 'No backup from this browser yet.') + '</p>' +
+      '<p class="mt"><button class="btn inline-btn" type="button" id="backupBtn">Back up now</button></p><p class="small" id="backupMsg" role="status"></p><div id="backupText"></div></section>' +
+      '<section class="sec"><h2>Restore</h2><p class="small">Replaces your progress (settings, card states, reviews, flags and notes) with a backup’s. ' + (app.owner ? 'The cards themselves are restored from the Project chat.' : 'The cards themselves are shared and aren’t changed by a restore.') + '</p>' +
+      '<p class="mt"><label class="btn inline-btn filebtn">Choose a backup file<input type="file" id="restoreFile" accept=".json,application/json" hidden></label></p>' +
+      '<div id="restorePlan" role="status"></div></section>' +
+      '<section class="sec"><h2>About</h2><p class="small">Beta. Cards are checked against the Databricks documentation but aren’t official Databricks material. Flag anything that looks wrong.</p>' +
+      '<p class="mt"><button class="linkbtn" type="button" id="aboutBtn">How Cert SRS works</button></p></section>');
+    $('aboutBtn').onclick = function () { openInfo(ABOUT_HTML); };
+    var dirty = function () {
+      var m = Number($('mins').value), d = $('examDate').value;
+      $('prefsSave').disabled = (m === app.settings.dailyMinutes && (d || null) === (app.settings.examDate || null));
+    };
+    setBar('<button class="btn primary" id="prefsSave" type="button" disabled>Save settings</button>');
+    $('examDate').addEventListener('input', dirty); $('examDate').addEventListener('change', dirty); $('mins').addEventListener('input', dirty);
+    $('clearDate').onclick = function () { $('examDate').value = ''; dirty(); };
+    var step = function (k) { var m = Math.round((Number($('mins').value) || mins) / 5) * 5 + k; $('mins').value = Math.max(5, Math.min(120, m)); dirty(); };
+    $('minDown').onclick = function () { step(-5); }; $('minUp').onclick = function () { step(5); };
+    $('prefsSave').onclick = savePrefs;
+    $('backupBtn').onclick = backup;
+    $('restoreFile').addEventListener('change', function () { var f = this.files && this.files[0]; if (f) readRestoreFile(f); this.value = ''; });
+  }
+  function savePrefs() {
+    var m = Number($('mins').value), d = $('examDate').value || null, err = $('prefsErr');
+    if (!(m >= 5 && m <= 120 && m % 1 === 0)) { err.textContent = 'Daily minutes should be a whole number from 5 to 120.'; return; }
+    if (d && !parseDay(d)) { err.textContent = 'That exam date isn’t valid.'; return; }
+    var raw = Object.assign({}, app.settingsRaw || {}, { exam: app.settings.exam, dailyMinutes: m, updated: Date.now() });
+    if (d) raw.examDate = d; else delete raw.examDate;
+    var btn = $('prefsSave'); btn.disabled = true; err.textContent = '';
+    tryWrite(function () { return db.doc(base + '/settings').set(raw); }).then(function () {
+      app.settingsRaw = raw; app.settings.dailyMinutes = m; app.settings.examDate = d;
+      toast('Settings saved');
+      if (d && parseDay(d) <= Date.now() && $('prefsErr')) $('prefsErr').textContent = 'Saved, but that date is today or past, so readiness keeps using 14 days from today.';
+    }, function (e) { btn.disabled = false; err.textContent = 'Not saved (' + errText(e) + '). Try again.'; });
+  }
+
+  /* Private rows: the documents under data/users/{me}. Reviews are paged by time; the other collections stay small. */
+  var PRIVATE_DOCS = ['settings', 'state', 'params'];
+  var PRIVATE_COLS = ['tracks', 'reviews', 'flags', 'notes', 'mocks'];
+  var PRIVATE_KEY = /^(settings|state|params)$|^state\/(tracks|reviews|flags|notes|mocks)\/(?!\.\.?$)[A-Za-z0-9_\-.~:@+]{1,200}$/;
+  function pageAll(col) {
+    var out = {}, last = null;
+    function step() {
+      var q = (last == null ? col : col.where('t', '>=', last)).orderBy('t').limit(500);
+      return q.get().then(function (snap) {
+        var added = 0;
+        snap.docs.forEach(function (d) { if (!out[d.id]) { out[d.id] = d.data(); added++; } var t = d.data().t; if (typeof t === 'number' && (last == null || t > last)) last = t; });
+        return snap.size >= 500 && added ? step() : out;
+      });
+    }
+    return step();
+  }
+  function readPrivate() {
+    var st = db.doc(base + '/state'), out = {};
+    return Promise.all(PRIVATE_DOCS.map(function (k) { return db.doc(base + '/' + k).get(); }).concat(PRIVATE_COLS.map(function (c) {
+      return c === 'reviews' ? pageAll(st.collection(c)) : st.collection(c).get().then(function (s) { var m = {}; s.docs.forEach(function (d) { m[d.id] = d.data(); }); return m; });
+    }))).then(function (r) {
+      PRIVATE_DOCS.forEach(function (k, i) { if (r[i].exists) out[k] = r[i].data(); });
+      PRIVATE_COLS.forEach(function (c, i) { var m = r[PRIVATE_DOCS.length + i]; Object.keys(m).sort().forEach(function (id) { out['state/' + c + '/' + id] = m[id]; }); });
+      return out;
+    });
+  }
+  function readContent() {
+    var out = {};
+    return Promise.all(['exams', 'concepts', 'heldout'].map(function (c) { return db.collection(c).get().then(function (s) { s.docs.forEach(function (d) { out[c + '/' + d.id] = d.data(); }); }); }))
+      .then(function () { var o = {}; Object.keys(out).sort().forEach(function (k) { o[k] = out[k]; }); return o; });
+  }
+  function counts(content, priv) {
+    var n = function (o, p) { return Object.keys(o).filter(function (k) { return k.indexOf(p) === 0; }).length; };
+    return { concepts: n(content, 'concepts/'), heldout: n(content, 'heldout/'), tracks: n(priv, 'state/tracks/'), reviews: n(priv, 'state/reviews/'),
+      flags: n(priv, 'state/flags/'), notes: n(priv, 'state/notes/'), mocks: n(priv, 'state/mocks/') };
+  }
+  function backup() {
+    var btn = $('backupBtn'), msg = $('backupMsg'); btn.disabled = true; msg.textContent = 'Reading cards and progress…'; $('backupText').innerHTML = '';
+    var now = Date.now(), obj;
+    Promise.all([app.owner ? readContent() : Promise.resolve({}), readPrivate()]).then(function (r) {
+      obj = { format: 'cert-srs-backup', version: 1, created: new Date(now).toISOString(), createdMs: now, source: 'app', app: APP_VERSION, sched: S.VERSION,
+        uid: base.split('/')[2], counts: counts(r[0], r[1]), content: r[0], private: r[1] };
+      var json = JSON.stringify(obj), name = 'cert-srs-backup-' + localDate(now) + '-' + String(new Date(now).getHours()).padStart(2, '0') + String(new Date(now).getMinutes()).padStart(2, '0') + '.json';
+      var c = obj.counts, summary = (app.owner ? plural(c.concepts, 'concept', 'concepts') + ', ' : '') + plural(c.tracks, 'card state', 'card states') + ', ' + plural(c.reviews, 'review', 'reviews') + ', ' +
+        plural(c.flags, 'flag', 'flags') + ', ' + plural(c.notes, 'note', 'notes') + ' (' + Math.ceil(json.length / 1024) + ' kB)';
+      return window.claude.use('downloads').then(function (dl) {
+        if (!dl) { showBackupText(json, summary); return null; }
+        msg.textContent = 'Confirm the download: ' + summary + '.';
+        return dl.save({ filename: name, data: json }).then(function () {
+          msg.textContent = 'Backup saved: ' + summary + '.';
+          /* A backup only reads. The reminder date lives in this browser, so it never sits outside the backup it describes. */
+          try { localStorage.setItem('cert-srs-last-backup', String(now)); } catch (e) { /* a convenience */ }
+          var el = $('lastBackup'); if (el) el.textContent = 'Last backup from this browser: ' + fmtDay(now) + '.';
+        }, function (e) {
+          var code = e && e.code;
+          if (code === 'declined') msg.textContent = 'Backup not saved: the download was declined.';
+          else if (code === 'rate_limited') msg.textContent = 'A download prompt is already open. Try again in a moment.';
+          else showBackupText(json, summary);
+        });
+      });
+    }).catch(function (e) { msg.textContent = 'Backup failed (' + errText(e) + '). Nothing was changed.'; })
+      .then(function () { var b = $('backupBtn'); if (b) b.disabled = false; });
+  }
+  function showBackupText(json, summary) {
+    $('backupMsg').textContent = 'Downloads aren’t available in this view, so here is the backup to copy into a file (' + summary + ').';
+    $('backupText').innerHTML = '<textarea class="in mono" id="backupJson" readonly></textarea>';
+    $('backupJson').value = json;
+  }
+
+  function readRestoreFile(file) {
+    var plan = $('restorePlan'); plan.innerHTML = '<p class="small">Reading ' + esc(file.name) + '…</p>';
+    var fr = new FileReader();
+    fr.onerror = function () { plan.innerHTML = '<p class="err">That file couldn’t be read.</p>'; };
+    fr.onload = function () { prepareRestore(String(fr.result || ''), file.name); };
+    fr.readAsText(file);
+  }
+  function checkBackup(text) {
+    var b; try { b = JSON.parse(text); } catch (e) { return { error: 'This isn’t a JSON file.' }; }
+    if (!b || b.format !== 'cert-srs-backup') return { error: 'This isn’t a Cert SRS backup.' };
+    if (b.version !== 1) return { error: 'This backup is version ' + b.version + ', which this page can’t read.' };
+    var p = b.private;
+    if (!p || typeof p !== 'object' || Array.isArray(p)) return { error: 'The backup has no private rows.' };
+    var bad = Object.keys(p).filter(function (k) { var v = p[k]; return !PRIVATE_KEY.test(k) || !v || typeof v !== 'object' || Array.isArray(v) || JSON.stringify(v).length > 256 * 1024; });
+    if (bad.length) return { error: 'The backup has ' + plural(bad.length, 'row', 'rows') + ' this page won’t write (first: ' + bad[0].slice(0, 60) + ').' };
+    return { backup: b };
+  }
+  function prepareRestore(text, name) {
+    var plan = $('restorePlan'), chk = checkBackup(text);
+    if (chk.error) { plan.innerHTML = '<p class="err">' + esc(chk.error) + ' Nothing was changed.</p>'; return; }
+    var b = chk.backup;
+    plan.innerHTML = '<p class="small">Comparing with your current progress…</p>';
+    readPrivate().then(function (cur) {
+      var keep = Object.keys(b.private), del = Object.keys(cur).filter(function (k) { return !(k in b.private); });
+      var bc = counts(b.content || {}, b.private), cc = counts({}, cur);
+      var line = function (c) { return plural(c.tracks, 'card state', 'card states') + ', ' + plural(c.reviews, 'review', 'reviews') + ', ' + plural(c.flags, 'flag', 'flags') + ', ' + plural(c.notes, 'note', 'notes'); };
+      app.restore = { backup: b, del: del };
+      plan.innerHTML = '<div class="item mt"><p class="meta">' + esc(name) + '</p>' +
+        '<p>Backup from ' + esc(new Date(b.createdMs || Date.parse(b.created)).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })) + (b.source && b.source !== 'app' ? ' (' + esc(b.source) + ')' : '') + '</p>' +
+        '<p class="small">In the backup: ' + esc(line(bc)) + (b.private.settings ? ', settings' : '') + '.</p>' +
+        '<p class="small">Now: ' + esc(line(cc)) + (cur.settings ? ', settings' : '') + '.</p>' +
+        '<p class="small">Restoring writes ' + plural(keep.length, 'row', 'rows') + ' and deletes ' + plural(del.length, 'row', 'rows') + ' that aren’t in the backup' +
+        (del.length ? ', including anything you did since it was made' : '') + '. Back up first if you might want today’s state.</p>' +
+        (bc.concepts && app.owner ? '<p class="small">Its ' + plural(bc.concepts, 'concept', 'concepts') + ' aren’t restored here; restore cards from the Project chat if they’re ever lost.</p>' : '') + '</div>' +
+        '<p class="mt"><button class="btn warn inline-btn" type="button" id="restoreGo">Replace my progress with this backup</button></p><p class="small" id="restoreMsg" role="status"></p>';
+      $('restoreGo').onclick = function () {
+        var g = $('restoreGo');
+        if (!g.getAttribute('data-armed')) {
+          g.setAttribute('data-armed', '1'); g.textContent = 'Tap again to replace your progress';
+          setTimeout(function () { if (g.isConnected && !g.disabled) { g.removeAttribute('data-armed'); g.textContent = 'Replace my progress with this backup'; } }, 5000);
+          return;
+        }
+        runRestore();
+      };
+    }, function (e) { plan.innerHTML = '<p class="err">Your current progress couldn’t be read (' + esc(errText(e)) + '). Nothing was changed.</p>'; });
+  }
+  function runRestore() {
+    var r = app.restore; if (!r) return;
+    var p = r.backup.private, g = $('restoreGo'), msg = $('restoreMsg');
+    var order = function (k) { return k === 'state' ? 2 : 1; };   /* the day summary last, so a half-done restore never looks finished */
+    var keys = Object.keys(p).sort(function (a, b) { return order(a) - order(b) || (a < b ? -1 : 1); });
+    var total = keys.length + r.del.length, done = 0;
+    g.disabled = true; app.pending++; pauseCard();
+    var chain = Promise.resolve();
+    keys.forEach(function (k) { chain = chain.then(function () { return tryWrite(function () { return db.doc(base + '/' + k).set(p[k]); }); }).then(function () { done++; if (done % 10 === 0 || done === total) msg.textContent = 'Restoring… ' + done + ' of ' + total; }); });
+    r.del.forEach(function (k) { chain = chain.then(function () { return tryWrite(function () { return db.doc(base + '/' + k).delete(); }); }).then(function () { done++; if (done % 10 === 0 || done === total) msg.textContent = 'Restoring… ' + done + ' of ' + total; }); });
+    chain.then(function () {
+      app.pending--; app.restore = null;
+      adopt(p);
+      msg.textContent = 'Restored ' + plural(total, 'change', 'changes') + '. Today now follows the backup.';
+      g.textContent = 'Restored'; toast('Progress restored');
+    }, function (e) {
+      app.pending--; g.disabled = false; g.removeAttribute('data-armed'); g.textContent = 'Run the restore again';
+      msg.textContent = 'Stopped after ' + done + ' of ' + total + ' (' + errText(e) + '). Running it again is safe: it finishes the same job.';
+    });
+  }
+  /* Load restored rows into the running page, as boot would have. */
+  function adopt(p) {
+    var settings = p.settings || {};
+    app.settingsRaw = settings;
+    app.settings = { exam: settings.exam || EXAM_DEFAULT, dailyMinutes: settings.dailyMinutes || 20, retention: settings.retention || 0.9, examDate: settings.examDate || null };
+    app.days = (p.state && p.state.days) || {};
+    app.states = {};
+    Object.keys(p).forEach(function (k) { var m = /^state\/tracks\/(.+)$/.exec(k); if (m && p[k].fsrs) app.states[m[1]] = p[k]; });
+    app.cur = null; app.notes = null; app.flags = null; app.lastDomain = null;
+    S = CertSched.create(FSRS, { retention: app.settings.retention, fuzz: true });
+  }
+
+  setInterval(function () { if (app.ready && app.cur) header(); }, 30000);
+  boot();
+})();
+</script>
+</body>
+</html>

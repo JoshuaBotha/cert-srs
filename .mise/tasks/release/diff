@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#MISE description="Page release step 4: diff the fresh build against the live baseline"
+#MISE depends=["app:build"]
+#MISE dir="{{config_root}}/app"
+set -euo pipefail
+if diff -u published-cert-srs.html build/cert-srs.html; then
+  echo "Build is identical to published-cert-srs.html."
+else
+  echo "Review every changed line above before publishing."
+fi

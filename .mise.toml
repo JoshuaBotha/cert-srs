@@ -1,0 +1,13 @@
+# Toolchain and environment for Cert SRS. Tasks live as scripts under .mise/tasks/
+# (subfolders become task groups: .mise/tasks/app/test -> `mise run app:test`).
+# `mise tasks` lists them.
+
+[tools]
+node = "24"
+python = "3.14"
+uv = "latest"
+
+[env]
+# Project virtualenv for the optional Python checks (factcheck, py-fsrs, Playwright).
+# mise creates it on first use; `mise run setup:python` installs the packages.
+_.python.venv = { path = ".venv", create = true }

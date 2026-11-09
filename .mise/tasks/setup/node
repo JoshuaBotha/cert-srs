@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Install npm dependencies for scheduler/ and app/ from their lockfiles"
+#MISE sources=["scheduler/package-lock.json", "app/package-lock.json"]
+#MISE outputs=["scheduler/node_modules/.package-lock.json", "app/node_modules/.package-lock.json"]
+set -euo pipefail
+(cd scheduler && npm ci)
+(cd app && npm ci)

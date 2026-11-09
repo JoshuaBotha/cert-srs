@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Install Python packages for the optional checks into .venv (factcheck, py-fsrs, Playwright)"
+set -euo pipefail
+uv pip install beautifulsoup4 markdownify lxml fsrs==6.3.2 playwright
+python -m playwright install chromium

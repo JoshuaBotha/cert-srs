@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Check concept sources against the Databricks docs (needs setup:python and network); args: concept-id prefixes"
+#MISE dir="{{config_root}}/content"
+set -euo pipefail
+python factcheck.py "$@"

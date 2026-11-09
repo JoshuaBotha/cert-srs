@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Run the scripted history through ts-fsrs and py-fsrs (writes ts_out.json, py_out.json; needs setup:python)"
+#MISE depends=["setup:node"]
+#MISE dir="{{config_root}}/scheduler"
+set -euo pipefail
+node ts_run.js
+python py_run.py
+echo "For a like-for-like comparison see README.md: patched py-fsrs on PYTHONPATH, then py_check.py."

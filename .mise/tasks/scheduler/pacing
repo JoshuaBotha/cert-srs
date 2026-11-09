@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Pacing simulation: 8 runs over the planned tracks, with and without the 20-minute cap"
+#MISE depends=["setup:node"]
+#MISE dir="{{config_root}}/scheduler"
+set -euo pipefail
+node pacing.sim.js

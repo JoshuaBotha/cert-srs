@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Page release step 7: copy the published build to app/published-cert-srs.html"
+#MISE dir="{{config_root}}/app"
+set -euo pipefail
+cp build/cert-srs.html published-cert-srs.html
+version=$(node -p "require('./package.json').version")
+echo "Recorded. Commit, then tag v$version."

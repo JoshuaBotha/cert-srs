@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Page release steps 1 and 6: compare a saved live read with a local file (default app/published-cert-srs.html)"
+#MISE dir="{{config_root}}"
+set -euo pipefail
+python tools/live_compare.py "$1" "${2:-app/published-cert-srs.html}"

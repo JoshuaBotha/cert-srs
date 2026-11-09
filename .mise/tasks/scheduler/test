@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Scheduler unit tests"
+#MISE depends=["setup:node"]
+#MISE dir="{{config_root}}/scheduler"
+set -euo pipefail
+node unit.test.js

@@ -1,0 +1,2 @@
+20-minute cap (spec rule): intro weeks 8.0–9.3 | new/day 6.1 | mean 17.4 min | peak week 19.7 | after 9.9 min | days ending with reviews undone 18.5 of ~89 (avg 2.9 cards left)
+no cap (original sim): intro weeks 8.0–9.0 | new/day 6.2 | mean 18.0 min | peak week 22.8 | after 10.5 min | days ending with reviews undone 0.0 of ~88 (avg 0.0 cards left)

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Build, then run the ui, replay, real, m4 and share tests (set CERT_SRS_SNAPSHOT for real m4 rows)"
+#MISE depends=["setup:node", "content:build"]
+#MISE dir="{{config_root}}/app"
+set -euo pipefail
+npm test

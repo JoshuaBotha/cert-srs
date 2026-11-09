@@ -1,0 +1,20 @@
+--- py-fsrs-6.3.2/fsrs/scheduler.py
++++ py-fsrs-6.3.2-calendar-days/fsrs/scheduler.py
+@@ -229,7 +229,7 @@
+         if current_datetime is None:
+             current_datetime = datetime.now(timezone.utc)
+ 
+-        elapsed_days = max(0, (current_datetime - card.last_review).days)
++        elapsed_days = max(0, (current_datetime.date() - card.last_review.date()).days)
+ 
+         return (1 + self._FACTOR * elapsed_days / card.stability) ** self._DECAY
+ 
+@@ -267,7 +267,7 @@
+             review_datetime = datetime.now(timezone.utc)
+ 
+         days_since_last_review = (
+-            (review_datetime - card.last_review).days if card.last_review else None
++            (review_datetime.date() - card.last_review.date()).days if card.last_review else None
+         )
+ 
+         match card.state:

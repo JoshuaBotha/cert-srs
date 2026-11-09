@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Install all dependencies (npm and the optional Python packages)"
+#MISE depends=["setup:node", "setup:python"]

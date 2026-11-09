@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Build app/build/cert-srs.html (published) and app/test.html (for tests)"
+#MISE depends=["setup:node"]
+#MISE dir="{{config_root}}/app"
+set -euo pipefail
+node build.js

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#MISE description="Full check: content validator, scheduler tests, pacing sim, app tests"
+#MISE depends=["content:build", "scheduler:test", "scheduler:pacing", "app:test"]

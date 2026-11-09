@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Build content/out/ and content/all.json; runs the card-rule validator"
+#MISE dir="{{config_root}}/content"
+set -euo pipefail
+python build_content.py

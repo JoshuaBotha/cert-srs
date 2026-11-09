@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+
+# app build outputs (build/cert-srs.html is copied to published-cert-srs.html on release)
+app/build/
+app/test.html
+app/fixture.json
+
+# screenshot output: app/shots*.py write PNGs straight into app/
+app/*.png
+
+# content build outputs (content/db_versions.json is tracked on purpose)
+content/out/
+content/all.json
+
+# scheduler cross-check outputs
+scheduler/ts_out.json
+scheduler/py_out.json
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# generated export of this repo (python3 tools/bundle.py)
+cert-srs-build.txt
+
+# mise-managed Python virtualenv
+.venv/

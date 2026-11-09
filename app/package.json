@@ -1,0 +1,3 @@
+{ "name": "cert-srs-app", "private": true, "version": "1.3.2",
+  "scripts": { "build": "node build.js", "test": "node build.js && node ui.test.js && node replay.test.js && node real.test.js && node m4.test.js && node share.test.js" },
+  "dependencies": { "jsdom": "24.1.3" } }
